@@ -27,10 +27,9 @@ def comfPMVElevatedAirspeed(ta, tr, vel, rh, met, clo, wme):
     Returns:
         pmv : Predicted mean vote
         ppd : Percent predicted dissatisfied [%]
-        ta_adj: Air temperature adjusted for air speed [C]
-        cooling_effect : The difference between the air temperature and adjusted
-            air temperature [C]
         set: The Standard Effective Temperature [C] (see below)
+        ta_adj: Air temperature adjusted for air speed [C]
+        cooling_effect : The difference between the air temperature and adjusted air temperature [C]
     """
     r = []
     set = comfPierceSET(ta, tr, vel, rh, met, clo, wme)
