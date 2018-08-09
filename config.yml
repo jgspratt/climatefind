@@ -1,0 +1,13 @@
+---
+## Logging config
+LOG_FORMAT: '{asctime}.{msecs:03.0f} {module:10s} ({lineno:4d}) {funcName:12s} {levelname:5s} {message}'
+LOG_DATE_FORMAT: '%Y-%m-%d %H:%M:%S'
+LOG_FILENAME: 'climatefind.log'
+LOG_FORMAT_JSON: '{message}'
+LOG_FILENAME_JSON: 'climatefind.log.json'
+
+## Data dir config
+DATA_DIR_BIG: 'data/big'
+DATA_SMALL_SAMPLE: 'data/small/martha.CSV'
+
+
