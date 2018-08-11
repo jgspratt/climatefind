@@ -2,6 +2,7 @@ import os
 import logging
 import time
 import yaml
+import re
 import pandas
 
 ## YAML Configuration
@@ -52,4 +53,17 @@ json_log.addHandler(fileHandlerJson)
 
 
 log.info('it works')
+
+# column header on line 1 (after line 0)
+# date + time in column 0,1
+rows = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=1, parse_dates=[[0,1]])
+
+regex_replace_dict = dict((re.escape(k), v) for k, v in config['COLUMS_REPLACEMENT_DICTIONARY'].items())
+regex_pattern_string = re.compile("|".join(regex_replace_dict.keys()))
+simplified_column_names = []
+for column in rows.columns:
+  column_name = (regex_pattern_string.sub(lambda m: regex_replace_dict[re.escape(m.group(0))], column)).lower()
+  log.info(f'column_name: {column_name}')
+  simplified_column_names += column_name
+
 

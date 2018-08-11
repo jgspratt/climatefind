@@ -8,6 +8,14 @@ LOG_FILENAME_JSON: 'climatefind.log.json'
 
 ## Data dir config
 DATA_DIR_BIG: 'data/big'
-DATA_SMALL_SAMPLE: 'data/small/martha.CSV'
+DATA_SMALL_SAMPLE: 'data/small/bridgeport.CSV'
 
 
+COLUMS_REPLACEMENT_DICTIONARY:
+  'Date (MM/DD/YYYY)_Time (HH:MM)': 'timestamp'
+  '^': ''
+  '/': '-'
+  '%': 'percent'
+  ' (': '_'
+  ')': ''
+  ' ': '-'
