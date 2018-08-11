@@ -1,3 +1,5 @@
+https://pandas.pydata.org/pandas-docs/stable/api.html#attributes-and-underlying-data
+
 >>> pprint(dir(rows))
 ['T',
  '_AXIS_ALIASES',

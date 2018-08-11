@@ -81,6 +81,13 @@ pprint(simplified_column_names)
 
 datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], names=simplified_column_names)
 
-print(datafile.columns)
-print(datafile)
+# print(datafile.columns)
+print(str(datafile.size))
+
+# print(datafile.pop(0))
+
+# while (row = datafile.pop(0))
+
+for row in datafile.iterrows():
+  print(row)
 
