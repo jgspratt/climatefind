@@ -1,9 +1,12 @@
 import os
+import sys
+from pprint import pprint
 import logging
 import time
 import yaml
 import re
 import pandas
+import collections
 
 ## YAML Configuration
 #####################
@@ -54,16 +57,30 @@ json_log.addHandler(fileHandlerJson)
 
 log.info('it works')
 
+## Format columns
+#################
+
 # column header on line 1 (after line 0)
 # date + time in column 0,1
-rows = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=1, parse_dates=[[0,1]])
+header_read = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=1, parse_dates=[[0,1]])
 
 regex_replace_dict = dict((re.escape(k), v) for k, v in config['COLUMS_REPLACEMENT_DICTIONARY'].items())
 regex_pattern_string = re.compile("|".join(regex_replace_dict.keys()))
-simplified_column_names = []
-for column in rows.columns:
+simplified_column_names = ['date']
+for column in header_read.columns:
   column_name = (regex_pattern_string.sub(lambda m: regex_replace_dict[re.escape(m.group(0))], column)).lower()
-  log.info(f'column_name: {column_name}')
-  simplified_column_names += column_name
+  # print(f'column_name: {column_name}')
+  # print(f'{column_name}')
+  simplified_column_names.append(column_name)
 
+# print([item for item, count in collections.Counter(simplified_column_names).items() if count > 1])
+
+pprint(simplified_column_names)
+
+# sys.exit(0)
+
+datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], names=simplified_column_names)
+
+print(datafile.columns)
+print(datafile)
 

@@ -101,7 +101,7 @@
  '_aggregate_multiple_funcs',
  '_align_frame',
  '_align_series',
- '_box_col_values',
+ '_box_rows = pandas.read_csv('martha.CSV', header=1, nrows=10, parse_dates=[[0,1]])_values',
  '_box_item_values',
  '_builtin_table',
  '_check_inplace_setting',
