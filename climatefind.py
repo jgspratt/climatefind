@@ -120,8 +120,9 @@ for month, days in year.items():
     for hour, cols in hours.items():
       year[month][day][hour]['comfy'] = comfy(dry_bulb_c=cols['dry_bulb_c'], dew_point_c=cols['dew_point_c'])
 
+comfy_days_in_year = 0
 for month, days in year.items():
-  comfy_days = 0
+  comfy_days_in_month = 0
   for day, hours in days.items():
     comfy_hours = 0
     for hour, cols in hours.items():
@@ -130,10 +131,11 @@ for month, days in year.items():
       comfy_year[month][day]['comfy'] = comfy_hours >= 6
     if comfy_hours >= 6:
       # print(f'{month:02}-{day:02}: comfy!')
-      comfy_days += 1
+      comfy_days_in_month += 1
+      comfy_days_in_year += 1
     else:
       # print(f'{month:02}-{day:02}')
       pass
-  print(f'month {month:02} ({calendar.month_abbr[month]}): {comfy_days} comfy days')
+  print(f'month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month} comfy days')
 
 
