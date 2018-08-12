@@ -13,9 +13,10 @@ DATA_SMALL_SAMPLE: 'data/small/bridgeport.CSV'
 
 COLUMS_REPLACEMENT_DICTIONARY:
   'Date (MM/DD/YYYY)_Time (HH:MM)': 'time'
+  '-': '_'
   '^': ''
-  '/': '-'
+  '/': '_'
   '%': 'percent'
   ' (': '_'
   ')': ''
-  ' ': '-'
+  ' ': '_'

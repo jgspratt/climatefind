@@ -7,6 +7,7 @@ import yaml
 import re
 import pandas
 import collections
+import calendar
 
 ## YAML Configuration
 #####################
@@ -81,29 +82,58 @@ pprint(simplified_column_names)
 dateparse = lambda date, hour: pandas.datetime.strptime(f'{date} {int(hour[0:2])-1:02}:00', '%m/%d/%Y %H:%M')
 
 
-# datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
-datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
+datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
+# datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
 
-# print(datafile.columns)
+print(datafile.columns)
 print(str(datafile.size))
 
 # print(datafile)
 
-# while (row = datafile.pop(0))
-
-year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict( int )))
+year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict( int ))))
+comfy_year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict()))
 
 log.info('make array - start')
 
 for index, row in datafile.iterrows():
-  # print(row['date_time'])
-  year[row['date_time'].month][row['date_time'].day][row['date_time'].hour] = row['dry-bulb_c']
-  # print(row['dry-bulb_c'])
+  important_cols = [
+    'dry_bulb_c',
+    'dew_point_c',
+    'rhum_percent',
+    'wspd_m_s',
+    'lprecip_depth_mm',
+  ]
+  
+  for col in important_cols:
+    year[row['date_time'].month][row['date_time'].day][row['date_time'].hour][col] = row[col]
 
 log.info('make array - done')
 
+def comfy(dry_bulb_c, dew_point_c):
+  if 15 < dry_bulb_c < 25 and dew_point_c < 15:
+    return True
+  else:
+    return False
+
 for month, days in year.items():
   for day, hours in days.items():
-    for hour, temp in hours.items():
-      print(f'{month:02}-{day:02} {hour:02}:00.....{temp}')
+    for hour, cols in hours.items():
+      year[month][day][hour]['comfy'] = comfy(dry_bulb_c=cols['dry_bulb_c'], dew_point_c=cols['dew_point_c'])
+
+for month, days in year.items():
+  comfy_days = 0
+  for day, hours in days.items():
+    comfy_hours = 0
+    for hour, cols in hours.items():
+      # print(f'{month:02}{day:02} {hour:02}: temp:{cols["dry_bulb_c"]}, dp:{cols["dew_point_c"]}  {cols["comfy"]}')
+      if cols['comfy']: comfy_hours += 1
+      comfy_year[month][day]['comfy'] = comfy_hours >= 6
+    if comfy_hours >= 6:
+      # print(f'{month:02}-{day:02}: comfy!')
+      comfy_days += 1
+    else:
+      # print(f'{month:02}-{day:02}')
+      pass
+  print(f'month {month:02} ({calendar.month_abbr[month]}): {comfy_days} comfy days')
+
 
