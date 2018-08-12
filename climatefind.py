@@ -73,9 +73,7 @@ for column in header_read.columns:
   # print(f'{column_name}')
   simplified_column_names.append(column_name)
 
-# print([item for item, count in collections.Counter(simplified_column_names).items() if count > 1])
-
-pprint(simplified_column_names)
+# pprint(simplified_column_names)
 
 # sys.exit(0)
 
@@ -88,6 +86,6 @@ print(str(datafile.size))
 
 # while (row = datafile.pop(0))
 
-for row in datafile.iterrows():
-  print(row)
+for index, row in datafile.iterrows():
+  print(row['dry-bulb_c'])
 

@@ -15,6 +15,8 @@ def comfPMVElevatedAirspeed(ta, tr, vel, rh, met, clo, wme):
     This function accepts any input conditions (including low air speeds)
     but will return accurate values if the airspeed is above (>0.15m/s).
     
+    http://www.ladybug.tools/ladybug/doc/comfort/pmv.m.html
+    
     Args:
         ta, air temperature (C)
         tr, mean radiant temperature (C)
