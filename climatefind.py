@@ -81,17 +81,6 @@ pprint(simplified_column_names)
 dateparse = lambda date, hour: pandas.datetime.strptime(f'{date} {int(hour[0:2])-1:02}:00', '%m/%d/%Y %H:%M')
 
 
-# sys.exit(0)
-# def dateparse(date, hour):
-#   print(f'date_string: {date_string}??????????????')
-#   print(f'foo: {foo}??????????????')
-#   # move hour back one to avoid this error:
-#   #   ValueError: time data '01/01/1985 24:00' does not match format '%m/%d/%Y %H:%M'
-#   # Also, because the records all **end** at the time listed (they are for the previous hour)
-#   hour = int(date_string[11:13])-1
-#   backshifted_date_string = f'{date_string[:11]}{hour:02}{date_string[13:]}'
-#   return pandas.datetime.strptime(x, '%m/%d/%Y %H:%M')
-
 # datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
 datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
 
