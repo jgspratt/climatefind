@@ -73,19 +73,48 @@ for column in header_read.columns:
   # print(f'{column_name}')
   simplified_column_names.append(column_name)
 
-# pprint(simplified_column_names)
+pprint(simplified_column_names)
+
+# move hour back one to avoid this error:
+#   ValueError: time data '01/01/1985 24:00' does not match format '%m/%d/%Y %H:%M'
+# Also, because the records all **end** at the time listed (they are for the previous hour)
+dateparse = lambda date, hour: pandas.datetime.strptime(f'{date} {int(hour[0:2])-1:02}:00', '%m/%d/%Y %H:%M')
+
 
 # sys.exit(0)
+# def dateparse(date, hour):
+#   print(f'date_string: {date_string}??????????????')
+#   print(f'foo: {foo}??????????????')
+#   # move hour back one to avoid this error:
+#   #   ValueError: time data '01/01/1985 24:00' does not match format '%m/%d/%Y %H:%M'
+#   # Also, because the records all **end** at the time listed (they are for the previous hour)
+#   hour = int(date_string[11:13])-1
+#   backshifted_date_string = f'{date_string[:11]}{hour:02}{date_string[13:]}'
+#   return pandas.datetime.strptime(x, '%m/%d/%Y %H:%M')
 
-datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], names=simplified_column_names)
+# datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
+datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
 
 # print(datafile.columns)
 print(str(datafile.size))
 
-# print(datafile.pop(0))
+# print(datafile)
 
 # while (row = datafile.pop(0))
 
+year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict( int )))
+
+log.info('make array - start')
+
 for index, row in datafile.iterrows():
-  print(row['dry-bulb_c'])
+  # print(row['date_time'])
+  year[row['date_time'].month][row['date_time'].day][row['date_time'].hour] = row['dry-bulb_c']
+  # print(row['dry-bulb_c'])
+
+log.info('make array - done')
+
+for month, days in year.items():
+  for day, hours in days.items():
+    for hour, temp in hours.items():
+      print(f'{month:02}-{day:02} {hour:02}:00.....{temp}')
 
