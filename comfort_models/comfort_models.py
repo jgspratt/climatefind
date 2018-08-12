@@ -31,7 +31,7 @@ def comfPMVElevatedAirspeed(ta, tr, vel, rh, met, clo, wme):
         ppd : Percent predicted dissatisfied [%]
         set: The Standard Effective Temperature [C] (see below)
         ta_adj: Air temperature adjusted for air speed [C]
-        cooling_effect : The difference between the air temperature and adjusted air temperature [C]
+        wind_cooling_effect : The difference between the air temperature and adjusted air temperature [C]
     """
     r = []
     set = comfPierceSET(ta, tr, vel, rh, met, clo, wme)
@@ -310,7 +310,12 @@ def comfPierceSET(ta, tr, vel, rh, met, clo, wme):
             / (1 + CSTR * COLDS))
         if SkinBloodFlow > 90.0: SkinBloodFlow = 90.0
         if SkinBloodFlow < 0.5: SkinBloodFlow = 0.5
-        REGSW = CSW * WARMB * math.exp(WARMS / 10.7)
+        
+        try:
+            REGSW = CSW * WARMB * math.exp(WARMS / 10.7)
+        except OverflowError:
+            REGSW = float('inf')
+        
         if REGSW > 500.0: REGSW = 500.0
         ERSW = 0.68 * REGSW
         REA = 1.0 / (LR * FACL * CHC)  # evaporative resistance of air layer

@@ -8,6 +8,7 @@ import re
 import pandas
 import collections
 import calendar
+import comfort_models
 
 ## YAML Configuration
 #####################
@@ -74,7 +75,7 @@ for column in header_read.columns:
   # print(f'{column_name}')
   simplified_column_names.append(column_name)
 
-pprint(simplified_column_names)
+# pprint(simplified_column_names)
 
 # move hour back one to avoid this error:
 #   ValueError: time data '01/01/1985 24:00' does not match format '%m/%d/%Y %H:%M'
@@ -85,7 +86,7 @@ dateparse = lambda date, hour: pandas.datetime.strptime(f'{date} {int(hour[0:2])
 datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
 # datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
 
-print(datafile.columns)
+# print(datafile.columns)
 print(str(datafile.size))
 
 # print(datafile)
@@ -109,18 +110,64 @@ for index, row in datafile.iterrows():
 
 log.info('make array - done')
 
-def comfy(dry_bulb_c, dew_point_c):
-  if 15 < dry_bulb_c < 25 and dew_point_c < 15:
+log.info('calculate comfyness - start')
+
+def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hour):
+  if config['LATEST_HOUR'] < hour or hour < config['EARLIEST_HOUR']:
+    return False
+  
+  how_you_would_feel_dressed_cool_walking_slow=comfort_models.comfPMVElevatedAirspeed(
+    ta=dry_bulb_c,
+    tr=dry_bulb_c,
+    vel=wspd_m_s,
+    rh=rhum_percent,
+    met=config['MIN_METABOLIC_RATE'],
+    clo=config['MIN_CLOTHING_RATING'],
+    wme=0  # This is like the heat generated (in MET units) by rubbing sandpaper against wood.  In practice, assume zero.
+  )[2]
+  
+  how_you_would_feel_dressed_warm_walking_fast=comfort_models.comfPMVElevatedAirspeed(
+    ta=dry_bulb_c,
+    tr=dry_bulb_c,
+    vel=wspd_m_s,
+    rh=rhum_percent,
+    met=config['MAX_METABOLIC_RATE'],
+    clo=config['MAX_CLOTHING_RATING'],
+    wme=0
+  )[2]
+  
+  # print(f'how_you_would_feel_dressed_cool_walking_slow: {how_you_would_feel_dressed_cool_walking_slow}')
+  # print(f'how_you_would_feel_dressed_warm_walking_fast: {how_you_would_feel_dressed_warm_walking_fast}')
+  
+  # This is the old, simple model:
+  # if 15 < dry_bulb_c < 25 and dew_point_c < 15 and wspd_m_s < 10 and lprecip_depth_mm == 0 and 7 <= hour <= 20:
+  
+  
+  if how_you_would_feel_dressed_cool_walking_slow <= config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE'] <= how_you_would_feel_dressed_warm_walking_fast and \
+    dew_point_c <= config['MAX_DEW_POINT'] and \
+    lprecip_depth_mm <= config['MAX_RAIN_DEPTH'] and \
+    wspd_m_s <= config['MAX_WIND_SPEED']:
     return True
   else:
     return False
 
 for month, days in year.items():
+  print(f'month {month:02} ({calendar.month_abbr[month]})...')
   for day, hours in days.items():
     for hour, cols in hours.items():
-      year[month][day][hour]['comfy'] = comfy(dry_bulb_c=cols['dry_bulb_c'], dew_point_c=cols['dew_point_c'])
+      year[month][day][hour]['comfy'] = comfy(
+        dry_bulb_c=cols['dry_bulb_c'],
+        dew_point_c=cols['dew_point_c'],
+        rhum_percent=cols['rhum_percent'],
+        wspd_m_s=cols['wspd_m_s'],
+        lprecip_depth_mm=cols['lprecip_depth_mm'],
+        hour=hour
+      )
+
+print(f'\n\nReport for {config["DATA_SMALL_SAMPLE"]}:\n')
 
 comfy_days_in_year = 0
+comfy_months_in_year = 0
 for month, days in year.items():
   comfy_days_in_month = 0
   for day, hours in days.items():
@@ -129,13 +176,20 @@ for month, days in year.items():
       # print(f'{month:02}{day:02} {hour:02}: temp:{cols["dry_bulb_c"]}, dp:{cols["dew_point_c"]}  {cols["comfy"]}')
       if cols['comfy']: comfy_hours += 1
       comfy_year[month][day]['comfy'] = comfy_hours >= 6
-    if comfy_hours >= 6:
+    if comfy_hours >= config['MIN_COMFY_HOURS']:
       # print(f'{month:02}-{day:02}: comfy!')
       comfy_days_in_month += 1
       comfy_days_in_year += 1
     else:
       # print(f'{month:02}-{day:02}')
       pass
-  print(f'month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month} comfy days')
+  if comfy_days_in_month >= config['MIN_COMFY_DAYS_PER_MONTH']:
+    comfy_months_in_year += 1
+  print(f'  month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month: >2} comfy days')
+
+print(f'\n  Typical year: {comfy_days_in_year} comfy days ({round((comfy_days_in_year/365)*100):02}%)')
+print(f'                  {comfy_months_in_year} comfy months ({round((comfy_months_in_year/12)*100):02}%)\n\n')
+
+log.info('calculate comfyness - done')
 
 

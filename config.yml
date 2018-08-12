@@ -8,7 +8,9 @@ LOG_FILENAME_JSON: 'climatefind.log.json'
 
 ## Data dir config
 DATA_DIR_BIG: 'data/big'
-DATA_SMALL_SAMPLE: 'data/small/bridgeport.CSV'
+DATA_SMALL_SAMPLE: 'data/small/martha.CSV'
+#DATA_SMALL_SAMPLE: 'data/small/bridgeport.CSV'
+#DATA_SMALL_SAMPLE: 'data/small/phoenix.CSV'
 
 
 COLUMS_REPLACEMENT_DICTIONARY:
@@ -20,3 +22,19 @@ COLUMS_REPLACEMENT_DICTIONARY:
   ' (': '_'
   ')': ''
   ' ': '_'
+
+MIN_METABOLIC_RATE: 3.01  # 1.0 is sitting at rest; 3 is a normal walk - see https://onlinelibrary.wiley.com/doi/pdf/10.1002/clc.4960130809
+MAX_METABOLIC_RATE: 5.01  # 5 is a fast walk
+MIN_CLOTHING_RATING: 0.4  # 1.0 is a business suit - ; 0.36 = Walking shorts, short-sleeved shirt https://www.engineeringtoolbox.com/clo-clothing-thermal-insulation-d_732.html - https://en.wikipedia.org/wiki/Clothing_insulation
+MAX_CLOTHING_RATING: 0.8
+#MAX_CLOTHING_RATING: 1.01  # Trousers, long-sleeved shirt, long-sleeved sweater, T-shirt
+DESIRED_STANDARD_EFFECTIVE_TEMPERATURE: 25.6
+MAX_WIND_SPEED: 10  # In meters per second
+MAX_RAIN_DEPTH: 0
+EARLIEST_HOUR: 9
+LATEST_HOUR: 18
+MAX_DEW_POINT: 15
+MIN_COMFY_HOURS: 6
+MIN_COMFY_DAYS_PER_MONTH: 15
+
+
