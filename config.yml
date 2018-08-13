@@ -8,9 +8,13 @@ LOG_FILENAME_JSON: 'climatefind.log.json'
 
 ## Data dir config
 DATA_DIR_BIG: 'data/big'
-DATA_SMALL_SAMPLE: 'data/small/martha.CSV'
-#DATA_SMALL_SAMPLE: 'data/small/bridgeport.CSV'
-#DATA_SMALL_SAMPLE: 'data/small/phoenix.CSV'
+DATA_SMALL_SAMPLES:
+  - 'data/small/martha.CSV'
+  - 'data/small/bridgeport.CSV'
+  - 'data/small/phoenix.CSV'
+  - 'data/small/estherville.CSV'
+  - 'data/small/sanfrancisco.CSV'
+  - 'data/small/denver.CSV'
 
 
 COLUMS_REPLACEMENT_DICTIONARY:
