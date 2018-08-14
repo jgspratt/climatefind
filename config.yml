@@ -6,15 +6,31 @@ LOG_FILENAME: 'climatefind.log'
 LOG_FORMAT_JSON: '{message}'
 LOG_FILENAME_JSON: 'climatefind.log.json'
 
+MODE: 'DATA_SMALL'  # DATA_BIG or DATA_SMALL
+
+SPEED: 'FAST'  # FAST or SLOW
+
 ## Data dir config
-DATA_DIR_BIG: 'data/big'
-DATA_SMALL_SAMPLES:
-  - 'data/small/martha.CSV'
-  - 'data/small/bridgeport.CSV'
-  - 'data/small/phoenix.CSV'
-  - 'data/small/estherville.CSV'
-  - 'data/small/sanfrancisco.CSV'
-  - 'data/small/denver.CSV'
+DATA_BIG: 'data/big/*.CSV'
+DATA_SMALL: 'data/small/*.CSV'
+
+META_HEADER_ROWS:
+  - 'site_identifier_code'
+  - 'station_name'
+  - 'station_state'
+  - 'site_time_zone'
+  - 'site_latitude'
+  - 'site_longitude'
+  - 'site_elevation'
+
+
+#DATA_SMALL_SAMPLES:
+#  - 'data/small/martha.CSV'
+#  - 'data/small/bridgeport.CSV'
+#  - 'data/small/phoenix.CSV'
+#  - 'data/small/estherville.CSV'
+#  - 'data/small/sanfrancisco.CSV'
+#  - 'data/small/denver.CSV'
 
 
 COLUMS_REPLACEMENT_DICTIONARY:
@@ -41,4 +57,10 @@ MAX_DEW_POINT: 15
 MIN_COMFY_HOURS: 6
 MIN_COMFY_DAYS_PER_MONTH: 15
 
+# Fast vars
+MIN_DRY_BULB_C: 12
+MAX_DRY_BULB_C: 25
+MAX_DEW_POINT_C: 15
+MAX_WINDSPEED_MS: 10
+MAX_LIQUID_PRECIP_MM: 0
 

@@ -1,0 +1,7 @@
+,site_identifier_code,station_name,station_state,site_time_zone,site_latitude,site_longitude,site_elevation,comfy_days_in_year,comfy_months_in_year
+bridgeport,725040,BRIDGEPORT,CT,-5.0,41.183,-73.15,3,89,2
+denver,725650,DENVER,CO,-7.0,39.833,-104.65,1650,103,2
+estherville,726499,ESTHERVILLE,IA,-6.0,43.4,-94.75,401,82,3
+martha,123456,MARTHA VINEYARD,MA,-5.0,41.4,-70.617,21,80,2
+phoenix,722780,PHOENIX,AZ,-7.0,33.45,-111.98299999999999,337,122,5
+sanfrancisco,724940,SAN FRANCISCO,CA,-8.0,37.617,-122.4,2,276,11

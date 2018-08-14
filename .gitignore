@@ -105,3 +105,4 @@ venv.bak/
 
 # extras
 data/data_manual.pdf
+data/big/*

@@ -1,5 +1,6 @@
 import os
 import sys
+import csv
 from pprint import pprint
 from tqdm import tqdm
 import logging
@@ -10,6 +11,9 @@ import pandas
 import collections
 import calendar
 import comfort_models
+import glob
+import ntpath
+
 
 ## YAML Configuration
 #####################
@@ -33,6 +37,56 @@ class JsonLog(object):
   def __str__(self):
     return '{json_string}'.format(json_string=json.dumps(self.kwargs, sort_keys=True))
 jl = JsonLog
+
+
+def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hour):
+  if config['LATEST_HOUR'] < hour or hour < config['EARLIEST_HOUR']:
+    return False
+  
+  if config['SPEED'] == 'FAST':
+    if config['MIN_DRY_BULB_C'] < dry_bulb_c < config['MAX_DRY_BULB_C'] and \
+      dew_point_c < config['MAX_DEW_POINT'] and \
+      wspd_m_s < config['MAX_WINDSPEED_MS'] and \
+      lprecip_depth_mm == config['MAX_LIQUID_PRECIP_MM'] and \
+      config['EARLIEST_HOUR'] <= hour <= config['LATEST_HOUR']:
+      return True
+    else:
+      return False
+  else:
+    how_you_would_feel_dressed_cool_walking_slow=comfort_models.comfPMVElevatedAirspeed(
+      ta=dry_bulb_c,
+      tr=dry_bulb_c,
+      vel=wspd_m_s,
+      rh=rhum_percent,
+      met=config['MIN_METABOLIC_RATE'],
+      clo=config['MIN_CLOTHING_RATING'],
+      wme=0  # This is like the heat generated (in MET units) by rubbing sandpaper against wood.  In practice, assume zero.
+    )[2]
+    
+    how_you_would_feel_dressed_warm_walking_fast=comfort_models.comfPMVElevatedAirspeed(
+      ta=dry_bulb_c,
+      tr=dry_bulb_c,
+      vel=wspd_m_s,
+      rh=rhum_percent,
+      met=config['MAX_METABOLIC_RATE'],
+      clo=config['MAX_CLOTHING_RATING'],
+      wme=0
+    )[2]
+    
+    # print(f'how_you_would_feel_dressed_cool_walking_slow: {how_you_would_feel_dressed_cool_walking_slow}')
+    # print(f'how_you_would_feel_dressed_warm_walking_fast: {how_you_would_feel_dressed_warm_walking_fast}')
+    
+    # This is the old, simple model:
+    # :
+    
+    
+    if how_you_would_feel_dressed_cool_walking_slow <= config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE'] <= how_you_would_feel_dressed_warm_walking_fast and \
+      dew_point_c <= config['MAX_DEW_POINT'] and \
+      lprecip_depth_mm <= config['MAX_RAIN_DEPTH'] and \
+      wspd_m_s <= config['MAX_WIND_SPEED']:
+      return True
+    else:
+      return False
 
 
 ## Setup logging
@@ -62,8 +116,28 @@ log.info('it works')
 
 ## Format columns
 #################
+files_list = glob.glob(config[config['MODE']])
 
-for sample_file in config['DATA_SMALL_SAMPLES']:
+# print(files_list)
+
+# sys.exit()
+
+comfyness_report = {}
+
+for sample_file in files_list:
+  
+  # meta header
+  meta_header = {}
+  station_meta = []
+  meta_header_file = pandas.read_csv(sample_file, nrows=1, header=None, names=config['META_HEADER_ROWS'])
+  for column in config['META_HEADER_ROWS']:
+    meta_header[column] = str(meta_header_file.at[0,column])
+    station_meta.append(meta_header[column])
+  
+  # pprint(meta_header)
+  # pprint(station_meta)
+  # sys.exit()
+  
   # column header on line 1 (after line 0)
   # date + time in column 0,1
   header_read = pandas.read_csv(sample_file, header=1, nrows=1, parse_dates=[[0,1]])
@@ -96,7 +170,7 @@ for sample_file in config['DATA_SMALL_SAMPLES']:
   year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict( int ))))
   comfy_year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict()))
   
-  log.info('make hash for {sample_file} - start')
+  log.info(f'make hash for {meta_header["station_name"]} - start')
   
   for index, row in datafile.iterrows():
     important_cols = [
@@ -110,48 +184,9 @@ for sample_file in config['DATA_SMALL_SAMPLES']:
     for col in important_cols:
       year[row['date_time'].month][row['date_time'].day][row['date_time'].hour][col] = row[col]
   
-  log.info('make hash for {sample_file} - done')
+  log.info(f'make hash for {meta_header["station_name"]} - done')
   
-  log.info('calculate comfyness for {sample_file} - start')
-  
-  def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hour):
-    if config['LATEST_HOUR'] < hour or hour < config['EARLIEST_HOUR']:
-      return False
-    
-    how_you_would_feel_dressed_cool_walking_slow=comfort_models.comfPMVElevatedAirspeed(
-      ta=dry_bulb_c,
-      tr=dry_bulb_c,
-      vel=wspd_m_s,
-      rh=rhum_percent,
-      met=config['MIN_METABOLIC_RATE'],
-      clo=config['MIN_CLOTHING_RATING'],
-      wme=0  # This is like the heat generated (in MET units) by rubbing sandpaper against wood.  In practice, assume zero.
-    )[2]
-    
-    how_you_would_feel_dressed_warm_walking_fast=comfort_models.comfPMVElevatedAirspeed(
-      ta=dry_bulb_c,
-      tr=dry_bulb_c,
-      vel=wspd_m_s,
-      rh=rhum_percent,
-      met=config['MAX_METABOLIC_RATE'],
-      clo=config['MAX_CLOTHING_RATING'],
-      wme=0
-    )[2]
-    
-    # print(f'how_you_would_feel_dressed_cool_walking_slow: {how_you_would_feel_dressed_cool_walking_slow}')
-    # print(f'how_you_would_feel_dressed_warm_walking_fast: {how_you_would_feel_dressed_warm_walking_fast}')
-    
-    # This is the old, simple model:
-    # if 15 < dry_bulb_c < 25 and dew_point_c < 15 and wspd_m_s < 10 and lprecip_depth_mm == 0 and 7 <= hour <= 20:
-    
-    
-    if how_you_would_feel_dressed_cool_walking_slow <= config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE'] <= how_you_would_feel_dressed_warm_walking_fast and \
-      dew_point_c <= config['MAX_DEW_POINT'] and \
-      lprecip_depth_mm <= config['MAX_RAIN_DEPTH'] and \
-      wspd_m_s <= config['MAX_WIND_SPEED']:
-      return True
-    else:
-      return False
+  log.info(f'calculate comfyness for {meta_header["station_name"]} - start')
   
   # for i in tqdm(range(10))
   for month, days in tqdm(year.items()):
@@ -170,7 +205,7 @@ for sample_file in config['DATA_SMALL_SAMPLES']:
     # sys.stdout.write('.')
     # sys.stdout.flush()
   
-  print(f'\n\nReport for {sample_file}:\n')
+  print(f'\n\nReport for {meta_header["station_name"]}:\n')
   
   comfy_days_in_year = 0
   comfy_months_in_year = 0
@@ -196,8 +231,20 @@ for sample_file in config['DATA_SMALL_SAMPLES']:
   print(f'\n  Typical year: {comfy_days_in_year} comfy days   ({round((comfy_days_in_year/365)*100): >3}%)')
   print(f'                  {comfy_months_in_year} comfy months ({round((comfy_months_in_year/12)*100): >3}%)\n\n')
   
-  log.info('calculate comfyness for {sample_file} - done')
+  log.info(f'calculate comfyness for {meta_header["station_name"]} - done')
   
-  
+  comfyness_report[str(ntpath.basename(sample_file)[:-4])] = (station_meta + [comfy_days_in_year, comfy_months_in_year])
 
 
+print(comfyness_report)
+
+write_out_this = pandas.DataFrame.from_dict(data=comfyness_report, orient='index', columns=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
+
+print(write_out_this)
+
+write_out_this.to_csv('comfyness_report.csv', header=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
+
+# with open('comfyness_report.csv', 'w') as csv_file:
+#     writer = csv.writer(csv_file)
+#     for key, value in comfyness_report.items():
+#        writer.writerow([key, value])
