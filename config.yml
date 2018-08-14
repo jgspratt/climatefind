@@ -6,9 +6,12 @@ LOG_FILENAME: 'climatefind.log'
 LOG_FORMAT_JSON: '{message}'
 LOG_FILENAME_JSON: 'climatefind.log.json'
 
-MODE: 'DATA_SMALL'  # DATA_BIG or DATA_SMALL
+OUTPUT_FILENAME: 'report'
+OUTPUT_EXT: csv
 
-SPEED: 'FAST'  # FAST or SLOW
+MODE: 'DATA_BIG'  # DATA_BIG or DATA_SMALL
+MAX_FILES: 10
+SPEED: 'SLOW'  # FAST or SLOW
 
 ## Data dir config
 DATA_BIG: 'data/big/*.CSV'

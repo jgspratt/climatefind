@@ -13,6 +13,10 @@ import calendar
 import comfort_models
 import glob
 import ntpath
+import colorama
+import datetime
+from time import strftime
+
 
 
 ## YAML Configuration
@@ -43,6 +47,12 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
   if config['LATEST_HOUR'] < hour or hour < config['EARLIEST_HOUR']:
     return False
   
+  # if wspd_m_s == 0:
+  #   wspd_m_s = 0.1  # comfPMVElevatedAirspeed can't handle zero wind.  You'll get this error:
+  #     # X = X_OLD - DELTA * ERR1 / (ERR2 - ERR1)
+  #     # ZeroDivisionError: float division by zero
+
+  
   if config['SPEED'] == 'FAST':
     if config['MIN_DRY_BULB_C'] < dry_bulb_c < config['MAX_DRY_BULB_C'] and \
       dew_point_c < config['MAX_DEW_POINT'] and \
@@ -53,31 +63,33 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
     else:
       return False
   else:
-    how_you_would_feel_dressed_cool_walking_slow=comfort_models.comfPMVElevatedAirspeed(
-      ta=dry_bulb_c,
-      tr=dry_bulb_c,
-      vel=wspd_m_s,
-      rh=rhum_percent,
-      met=config['MIN_METABOLIC_RATE'],
-      clo=config['MIN_CLOTHING_RATING'],
-      wme=0  # This is like the heat generated (in MET units) by rubbing sandpaper against wood.  In practice, assume zero.
-    )[2]
-    
-    how_you_would_feel_dressed_warm_walking_fast=comfort_models.comfPMVElevatedAirspeed(
-      ta=dry_bulb_c,
-      tr=dry_bulb_c,
-      vel=wspd_m_s,
-      rh=rhum_percent,
-      met=config['MAX_METABOLIC_RATE'],
-      clo=config['MAX_CLOTHING_RATING'],
-      wme=0
-    )[2]
-    
-    # print(f'how_you_would_feel_dressed_cool_walking_slow: {how_you_would_feel_dressed_cool_walking_slow}')
-    # print(f'how_you_would_feel_dressed_warm_walking_fast: {how_you_would_feel_dressed_warm_walking_fast}')
-    
-    # This is the old, simple model:
-    # :
+    try:
+      how_you_would_feel_dressed_cool_walking_slow=comfort_models.comfPMVElevatedAirspeed(
+        ta=dry_bulb_c,
+        tr=dry_bulb_c,
+        vel=wspd_m_s,
+        rh=rhum_percent,
+        met=config['MIN_METABOLIC_RATE'],
+        clo=config['MIN_CLOTHING_RATING'],
+        wme=0  # This is like the heat generated (in MET units) by rubbing sandpaper against wood.  In practice, assume zero.
+      )[2]
+    except ArithmeticError:
+      log.warning(f'could not calculate this data: ta={dry_bulb_c}, tr={dry_bulb_c}, vel={wspd_m_s}, rh={rhum_percent},met={config["MAX_METABOLIC_RATE"]},clo={config["MAX_CLOTHING_RATING"]},wme=0)')
+      return False
+      
+    try:
+      how_you_would_feel_dressed_warm_walking_fast=comfort_models.comfPMVElevatedAirspeed(
+        ta=dry_bulb_c,
+        tr=dry_bulb_c,
+        vel=wspd_m_s,
+        rh=rhum_percent,
+        met=config['MAX_METABOLIC_RATE'],
+        clo=config['MAX_CLOTHING_RATING'],
+        wme=0
+      )[2]
+    except ArithmeticError:
+      log.warning(f'could not calculate this data: ta={dry_bulb_c}, tr={dry_bulb_c}, vel={wspd_m_s}, rh={rhum_percent},met={config["MAX_METABOLIC_RATE"]},clo={config["MAX_CLOTHING_RATING"]},wme=0)')
+      return False
     
     
     if how_you_would_feel_dressed_cool_walking_slow <= config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE'] <= how_you_would_feel_dressed_warm_walking_fast and \
@@ -92,7 +104,7 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
 ## Setup logging
 ################
 log = logging.getLogger('main')
-log.setLevel(logging.INFO)
+log.setLevel(logging.WARN)
 logFormatter = logging.Formatter(fmt=config['LOG_FORMAT'], style='{', datefmt=config['LOG_DATE_FORMAT'])
 
 consoleHandler = logging.StreamHandler()
@@ -112,7 +124,7 @@ fileHandlerJson.setFormatter(logFormatterJson)
 json_log.addHandler(fileHandlerJson)
 
 
-log.info('it works')
+print('it works')
 
 ## Format columns
 #################
@@ -124,7 +136,13 @@ files_list = glob.glob(config[config['MODE']])
 
 comfyness_report = {}
 
+progress_bar_files = tqdm(total=len(files_list), position=0, unit='station')
+
+filecount = 0
 for sample_file in files_list:
+  filecount += 1
+  if filecount > config['MAX_FILES']:
+    break
   
   # meta header
   meta_header = {}
@@ -133,6 +151,8 @@ for sample_file in files_list:
   for column in config['META_HEADER_ROWS']:
     meta_header[column] = str(meta_header_file.at[0,column])
     station_meta.append(meta_header[column])
+  
+  file_code = str(ntpath.basename(sample_file)[:-4])
   
   # pprint(meta_header)
   # pprint(station_meta)
@@ -163,14 +183,14 @@ for sample_file in files_list:
   # datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
   
   # print(datafile.columns)
-  print(str(datafile.size))
+  log.debug(str(datafile.size))
   
   # print(datafile)
   
   year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict( int ))))
   comfy_year = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict()))
   
-  log.info(f'make hash for {meta_header["station_name"]} - start')
+  log.info(f'make hash for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - start')
   
   for index, row in datafile.iterrows():
     important_cols = [
@@ -184,16 +204,18 @@ for sample_file in files_list:
     for col in important_cols:
       year[row['date_time'].month][row['date_time'].day][row['date_time'].hour][col] = row[col]
   
-  log.info(f'make hash for {meta_header["station_name"]} - done')
+  log.info(f'make hash for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - done')
   
-  log.info(f'calculate comfyness for {meta_header["station_name"]} - start')
+  log.info(f'calculate comfyness for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - start')
   
-  # for i in tqdm(range(10))
-  for month, days in tqdm(year.items()):
+  progress_bar_months = tqdm(total=12, position=1, unit='month')
+  for month, days in year.items():
     # sys.stdout.write(f'month {month:02} ({calendar.month_abbr[month]})')
     # sys.stdout.flush()
+    progress_bar_days = tqdm(total=len(days.items()), position=2, unit='day')
     for day, hours in days.items():
       for hour, cols in hours.items():
+        # print(f'{month}-{day} {hour}')  # Use this if you need to find some bad data
         year[month][day][hour]['comfy'] = comfy(
           dry_bulb_c=cols['dry_bulb_c'],
           dew_point_c=cols['dew_point_c'],
@@ -202,10 +224,15 @@ for sample_file in files_list:
           lprecip_depth_mm=cols['lprecip_depth_mm'],
           hour=hour
         )
+      progress_bar_days.update(1)
+    progress_bar_months.update(1)
     # sys.stdout.write('.')
     # sys.stdout.flush()
   
-  print(f'\n\nReport for {meta_header["station_name"]}:\n')
+  log.info(f'\n\nReport for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]}:\n')
+  
+  progress_bar_days.close()
+  progress_bar_months.close()
   
   comfy_days_in_year = 0
   comfy_months_in_year = 0
@@ -226,23 +253,28 @@ for sample_file in files_list:
         pass
     if comfy_days_in_month >= config['MIN_COMFY_DAYS_PER_MONTH']:
       comfy_months_in_year += 1
-    print(f'  month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month: >2} comfy days')
+    log.info(f'  month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month: >2} comfy days')
   
-  print(f'\n  Typical year: {comfy_days_in_year} comfy days   ({round((comfy_days_in_year/365)*100): >3}%)')
-  print(f'                  {comfy_months_in_year} comfy months ({round((comfy_months_in_year/12)*100): >3}%)\n\n')
+  log.info(f'\n  Typical year: {comfy_days_in_year} comfy days   ({round((comfy_days_in_year/365)*100): >3}%)')
+  log.info(f'                  {comfy_months_in_year} comfy months ({round((comfy_months_in_year/12)*100): >3}%)\n\n')
   
-  log.info(f'calculate comfyness for {meta_header["station_name"]} - done')
+  log.info(f'calculate comfyness for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - done')
   
-  comfyness_report[str(ntpath.basename(sample_file)[:-4])] = (station_meta + [comfy_days_in_year, comfy_months_in_year])
+  comfyness_report[file_code] = (station_meta + [comfy_days_in_year, comfy_months_in_year])
+  
+  progress_bar_files.update(1)
 
+progress_bar_files.close()
 
-print(comfyness_report)
+time.sleep(2)
+
+# print(comfyness_report)
 
 write_out_this = pandas.DataFrame.from_dict(data=comfyness_report, orient='index', columns=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
 
-print(write_out_this)
+# print(write_out_this)
 
-write_out_this.to_csv('comfyness_report.csv', header=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
+write_out_this.to_csv(f'{config["OUTPUT_FILENAME"]}_{config["MODE"]}_{config["SPEED"]}_{strftime("%Y-%m-%d_%H%M%S")}.{config["OUTPUT_EXT"]}', header=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
 
 # with open('comfyness_report.csv', 'w') as csv_file:
 #     writer = csv.writer(csv_file)
