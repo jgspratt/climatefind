@@ -104,7 +104,7 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
 ## Setup logging
 ################
 log = logging.getLogger('main')
-log.setLevel(logging.WARN)
+log.setLevel(logging.INFO)
 logFormatter = logging.Formatter(fmt=config['LOG_FORMAT'], style='{', datefmt=config['LOG_DATE_FORMAT'])
 
 consoleHandler = logging.StreamHandler()
@@ -255,12 +255,15 @@ for sample_file in files_list:
       comfy_months_in_year += 1
     log.info(f'  month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month: >2} comfy days')
   
-  log.info(f'\n  Typical year: {comfy_days_in_year} comfy days   ({round((comfy_days_in_year/365)*100): >3}%)')
-  log.info(f'                  {comfy_months_in_year} comfy months ({round((comfy_months_in_year/12)*100): >3}%)\n\n')
+  comfy_days_in_year_percent = round((comfy_days_in_year/365)*100)
+  comfy_months_in_year_percent = round((comfy_months_in_year/12)*100)
+  
+  log.info(f'\n  Typical year: {comfy_days_in_year} comfy days   ({comfy_days_in_year_percent: >3}%)')
+  log.info(f'                  {comfy_months_in_year} comfy months ({comfy_months_in_year_percent: >3}%)\n\n')
   
   log.info(f'calculate comfyness for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - done')
   
-  comfyness_report[file_code] = (station_meta + [comfy_days_in_year, comfy_months_in_year])
+  comfyness_report[file_code] = (station_meta + [comfy_days_in_year, comfy_months_in_year, comfy_days_in_year_percent, comfy_months_in_year_percent])
   
   progress_bar_files.update(1)
 
@@ -270,11 +273,11 @@ time.sleep(2)
 
 # print(comfyness_report)
 
-write_out_this = pandas.DataFrame.from_dict(data=comfyness_report, orient='index', columns=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
+write_out_this = pandas.DataFrame.from_dict(data=comfyness_report, orient='index', columns=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year', 'comfy_days_in_year_percent', 'comfy_months_in_year_percent']))
 
 # print(write_out_this)
 
-write_out_this.to_csv(f'{config["OUTPUT_FILENAME"]}_{config["MODE"]}_{config["SPEED"]}_{strftime("%Y-%m-%d_%H%M%S")}.{config["OUTPUT_EXT"]}', header=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year']))
+write_out_this.to_csv(f'{config["OUTPUT_FILENAME"]}_{config["MODE"]}_{config["SPEED"]}_{strftime("%Y-%m-%d_%H%M%S")}.{config["OUTPUT_EXT"]}', header=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year', 'comfy_days_in_year_percent', 'comfy_months_in_year_percent']))
 
 # with open('comfyness_report.csv', 'w') as csv_file:
 #     writer = csv.writer(csv_file)

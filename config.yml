@@ -9,13 +9,18 @@ LOG_FILENAME_JSON: 'climatefind.log.json'
 OUTPUT_FILENAME: 'report'
 OUTPUT_EXT: csv
 
-MODE: 'DATA_BIG'  # DATA_BIG or DATA_SMALL
-MAX_FILES: 10
+MODE: 'DATA_SMALL'  # DATA_BIG or DATA_SMALL
+MAX_FILES: 10000
 SPEED: 'SLOW'  # FAST or SLOW
 
 ## Data dir config
 DATA_BIG: 'data/big/*.CSV'
 DATA_SMALL: 'data/small/*.CSV'
+DATA_THREAD_1: 'data/thread/1/*.CSV'
+DATA_THREAD_2: 'data/thread/2/*.CSV'
+DATA_THREAD_3: 'data/thread/3/*.CSV'
+DATA_THREAD_4: 'data/thread/4/*.CSV'
+
 
 META_HEADER_ROWS:
   - 'site_identifier_code'
