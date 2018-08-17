@@ -393,6 +393,7 @@ def comfPierceSET(ta, tr, vel, rh, met, clo, wme):
         try:
             X = X_OLD - DELTA * ERR1 / (ERR2 - ERR1)
         except ZeroDivisionError:
+            X = X_OLD
             break
         dx = X - X_OLD
         X_OLD = X

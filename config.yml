@@ -1,4 +1,5 @@
 ---
+CPRINT: 'N'
 ## Logging config
 LOG_FORMAT: '{asctime}.{msecs:03.0f} {module:10s} ({lineno:4d}) {funcName:12s} {levelname:5s} {message}'
 LOG_DATE_FORMAT: '%Y-%m-%d %H:%M:%S'
@@ -9,13 +10,14 @@ LOG_FILENAME_JSON: 'climatefind.log.json'
 OUTPUT_FILENAME: 'report'
 OUTPUT_EXT: csv
 
-MODE: 'DATA_SMALL'  # DATA_BIG or DATA_SMALL
+MODE: 'DATA_THREAD_4'  # DATA_BIG or DATA_SMALL
 MAX_FILES: 10000
-SPEED: 'FAST'  # FAST or SLOW
+SPEED: 'SLOW'  # FAST or SLOW
 
 ## Data dir config
 DATA_BIG: 'data/big/*.CSV'
 DATA_SMALL: 'data/small/*.CSV'
+DATA_ONE: 'data/one/*.CSV'
 DATA_THREAD_1: 'data/thread/1/*.CSV'
 DATA_THREAD_2: 'data/thread/2/*.CSV'
 DATA_THREAD_3: 'data/thread/3/*.CSV'
@@ -67,6 +69,7 @@ LATEST_HOUR: 18
 MAX_DEW_POINT: 15
 MIN_COMFY_HOURS: 6
 MIN_COMFY_DAYS_PER_MONTH_PERCENT: 50
+MIN_ETR: 10  # In W/m^2
 
 # Fast vars
 MIN_DRY_BULB_C: 12

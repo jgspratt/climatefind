@@ -15,9 +15,8 @@ import glob
 import ntpath
 import colorama
 import datetime
-from time import strftime
+from time import strftime, sleep
 import numbers
-
 
 
 ## YAML Configuration
@@ -33,6 +32,9 @@ except FileNotFoundError:
   raise FileNotFoundError(str('could not load file: {path}'.format(path=CONFIG_YAML_FILE_DEFAULT_PATH)))
 config = config_yaml_default
 
+def cprint(the_string):
+  if config['CPRINT'] == 'C':
+    print(the_string)
 
 class JsonLog(object):
   def __init__(self, **kwargs):
@@ -44,8 +46,21 @@ class JsonLog(object):
 jl = JsonLog
 
 
-def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hour):
-  if config['LATEST_HOUR'] < hour or hour < config['EARLIEST_HOUR']:
+def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, etr_w_m2, hour):
+  # if config['LATEST_HOUR'] < hour or hour < config['EARLIEST_HOUR']:
+  #   return False
+  
+  # print(f'etr_w_m2: {etr_w_m2}')
+  # sleep(0.1)
+  
+  # Allow for longer summer days having nice evenings
+  if etr_w_m2 < config['MIN_ETR'] or hour < config['EARLIEST_HOUR']:
+    return False
+  
+  # Shortcut calculating expensive things
+  if dew_point_c > config['MAX_DEW_POINT'] or \
+      lprecip_depth_mm > config['MAX_RAIN_DEPTH'] or \
+      wspd_m_s > config['MAX_WIND_SPEED']:
     return False
   
   # if wspd_m_s == 0:
@@ -55,7 +70,7 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
 
   
   if config['SPEED'] == 'FAST':
-    if config['MIN_DRY_BULB_C'] < dry_bulb_c < config['MAX_DRY_BULB_C'] and \
+    if config['MIN_DRY_BULB_C'] <= dry_bulb_c <= config['MAX_DRY_BULB_C'] and \
       dew_point_c < config['MAX_DEW_POINT'] and \
       wspd_m_s < config['MAX_WINDSPEED_MS'] and \
       lprecip_depth_mm == config['MAX_LIQUID_PRECIP_MM'] and \
@@ -77,6 +92,10 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
     except ArithmeticError:
       log.warning(f'could not calculate this data: ta={dry_bulb_c}, tr={dry_bulb_c}, vel={wspd_m_s}, rh={rhum_percent},met={config["MAX_METABOLIC_RATE"]},clo={config["MAX_CLOTHING_RATING"]},wme=0)')
       return False
+    
+    # shortcut calculation of more complex things
+    if how_you_would_feel_dressed_cool_walking_slow > config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE']:
+      return False
       
     try:
       how_you_would_feel_dressed_warm_walking_fast=comfort_models.comfPMVElevatedAirspeed(
@@ -93,10 +112,7 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
       return False
     
     
-    if how_you_would_feel_dressed_cool_walking_slow <= config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE'] <= how_you_would_feel_dressed_warm_walking_fast and \
-      dew_point_c <= config['MAX_DEW_POINT'] and \
-      lprecip_depth_mm <= config['MAX_RAIN_DEPTH'] and \
-      wspd_m_s <= config['MAX_WIND_SPEED']:
+    if how_you_would_feel_dressed_cool_walking_slow <= config['DESIRED_STANDARD_EFFECTIVE_TEMPERATURE'] <= how_you_would_feel_dressed_warm_walking_fast:
       return True
     else:
       return False
@@ -125,7 +141,7 @@ fileHandlerJson.setFormatter(logFormatterJson)
 json_log.addHandler(fileHandlerJson)
 
 
-print('it works')
+cprint('it works')
 
 ## Format columns
 #################
@@ -179,14 +195,19 @@ for sample_file in files_list:
   
   # move hour back one to avoid this error:
   #   ValueError: time data '01/01/1985 24:00' does not match format '%m/%d/%Y %H:%M'
-  # Also, because the records all **end** at the time listed (they are for the previous hour)
+  # Also, because the records all **end** at the time listed (they are for the previous hour),
+  # this change makes it so that all observations are for the **next** hour.  Example:
+  # after this modification is in place, a reading at 0800 local is for the 0800-0900 hour.
   dateparse = lambda date, hour: pandas.datetime.strptime(f'{date} {int(hour[0:2])-1:02}:00', '%m/%d/%Y %H:%M')
   
   
   datafile = pandas.read_csv(sample_file, header=1, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
   # datafile = pandas.read_csv(config['DATA_SMALL_SAMPLE'], header=1, nrows=48, parse_dates=[[0,1]], keep_date_col=True, date_parser=dateparse, names=simplified_column_names)
   
-  # print(datafile.columns)
+  cprint(datafile.columns)
+  # sys.exit()
+  
+  
   log.debug(str(datafile.size))
   
   # print(datafile)
@@ -198,6 +219,7 @@ for sample_file in files_list:
   
   for index, row in datafile.iterrows():
     important_cols = [
+      'etr_w_m2',
       'dry_bulb_c',
       'dew_point_c',
       'rhum_percent',
@@ -208,35 +230,40 @@ for sample_file in files_list:
     for col in important_cols:
       year[row['date_time'].month][row['date_time'].day][row['date_time'].hour][col] = row[col]
   
+  # print(year)
+  
   log.info(f'make hash for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - done')
   
   log.info(f'calculate comfyness for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - start')
   
   progress_bar_months = tqdm(total=12, position=1, unit='month')
   for month, days in year.items():
-    # sys.stdout.write(f'month {month:02} ({calendar.month_abbr[month]})')
-    # sys.stdout.flush()
     progress_bar_days = tqdm(total=len(days.items()), position=2, unit='day')
     for day, hours in days.items():
       for hour, cols in hours.items():
+        # pprint(cols)
         # print(f'{month}-{day} {hour}')  # Use this if you need to find some bad data
-        year[month][day][hour]['comfy'] = comfy(
+        this_comfy = comfy(
           dry_bulb_c=cols['dry_bulb_c'],
           dew_point_c=cols['dew_point_c'],
           rhum_percent=cols['rhum_percent'],
           wspd_m_s=cols['wspd_m_s'],
           lprecip_depth_mm=cols['lprecip_depth_mm'],
+          etr_w_m2=cols['etr_w_m2'],
           hour=hour
         )
+        year[month][day][hour]['comfy'] = this_comfy
       progress_bar_days.update(1)
     progress_bar_months.update(1)
-    # sys.stdout.write('.')
-    # sys.stdout.flush()
   
   log.info(f'\n\nReport for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]}:\n')
   
   progress_bar_days.close()
   progress_bar_months.close()
+  
+  if config['MODE'] == 'DATA_ONE':
+    sleep(1)
+    print('\n\n\n')
   
   comfy_days_in_year = 0
   comfy_months_in_year_count = 0
@@ -244,6 +271,9 @@ for sample_file in files_list:
   for month, days in year.items():
     comfy_days_in_month = 0
     total_days_in_month = len(days.items())
+    if config['MODE'] == 'DATA_ONE':
+      sys.stdout.write(f'month {month:02} ({calendar.month_abbr[month]}): ')
+      sys.stdout.flush()
     for day, hours in days.items():
       comfy_hours = 0
       for hour, cols in hours.items():
@@ -252,16 +282,27 @@ for sample_file in files_list:
         comfy_year[month][day]['comfy'] = comfy_hours >= 6
       if comfy_hours >= config['MIN_COMFY_HOURS']:
         # print(f'{month:02}-{day:02}: comfy!')
+        if config['MODE'] == 'DATA_ONE':
+          sys.stdout.write('C')
+          sys.stdout.flush()
         comfy_days_in_month += 1
         comfy_days_in_year += 1
       else:
         # print(f'{month:02}-{day:02}')
+        if config['MODE'] == 'DATA_ONE':
+          sys.stdout.write('.')
+          sys.stdout.flush()
         pass
+    if config['MODE'] == 'DATA_ONE':
+      print('')
     comfy_days_in_month_percent = round((comfy_days_in_month/total_days_in_month)*100)
     comfy_days_in_months_percent.append(comfy_days_in_month_percent)
     if comfy_days_in_month_percent >= config['MIN_COMFY_DAYS_PER_MONTH_PERCENT']:
       comfy_months_in_year_count += 1
     log.info(f'  month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month: >2} comfy days')
+    
+
+
   
   comfy_days_in_year_percent = round((comfy_days_in_year/365)*100)
   comfy_months_in_year_percent = round((comfy_months_in_year_count/12)*100)
@@ -273,7 +314,8 @@ for sample_file in files_list:
   
   comfyness_report[file_code] = (station_meta + [comfy_days_in_year, comfy_months_in_year_count, comfy_days_in_year_percent, comfy_months_in_year_percent] + comfy_days_in_months_percent)
   
-  progress_bar_files.update(1)
+  if config['MODE'] != 'DATA_ONE':
+    progress_bar_files.update(1)
 
 progress_bar_files.close()
 
@@ -294,7 +336,11 @@ write_out_this = pandas.DataFrame.from_dict(
 # print(write_out_this)
 
 output_file_folder = f'export/{strftime("%Y-%m-%d")}'
-os.mkdir(output_file_folder)
+try:
+  os.mkdir(output_file_folder)
+except FileExistsError:
+  pass
+
 output_file_path = f'{output_file_folder}/{config["MODE"]}_{config["SPEED"]}_{strftime("%Y-%m-%d_%H%M%S")}_{config["OUTPUT_FILENAME"]}.{config["OUTPUT_EXT"]}'
 
 write_out_this.to_csv(
