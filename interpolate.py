@@ -22,10 +22,10 @@ print('it works')
 
 interpolation_algos = [
   'natural_neighbor',
-  'linear',
-  'rfb',
-  'cressman',
-  'barnes',
+  # 'linear',
+  # 'rfb',
+  # 'cressman',
+  # 'barnes',
 ]
 
 col_map = {
@@ -107,7 +107,7 @@ levels = list(range(0, 100, 5))
 cmap = plt.get_cmap('viridis')
 norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
 
-progress_bar_files = tqdm(total=len(col_map.items()), position=0, unit='file')
+progress_bar_files = tqdm(total=(len(col_map.items())*len(interpolation_algos)), position=0, unit='file')
 
 for interpolation_algo in interpolation_algos:
   for col_num, col_name in col_map.items():
@@ -167,8 +167,13 @@ for interpolation_algo in interpolation_algos:
       mmb = view.pcolormesh(gx, gy, img1, cmap=cmap, norm=norm)
       fig.colorbar(mmb, shrink=.4, pad=0, boundaries=levels)
     
-    plt.savefig(fname=f'output/{interpolation_algo}_{col_name}.png')
+    save_path = f'output/{interpolation_algo}_{col_name}.png'
+    try:
+      os.remove(save_path)
+    except FileNotFoundError:
+      pass
+    plt.savefig(fname=save_path)
     # plt.savefig(fname=f'export/{run_day}/{interpolation_algo}_{run_time}_{col_name}.png')
-  progress_bar_files.update(1)
+    progress_bar_files.update(1)
 
 # plt.show()
