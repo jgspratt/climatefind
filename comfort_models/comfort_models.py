@@ -390,7 +390,10 @@ def comfPierceSET(ta, tr, vel, rh, met, clo, wme):
             * (PSSK - 0.5 * findSaturatedVaporPressureTorr(X_OLD)))
         ERR2 = (HSK - HD_S * (TempSkin - (X_OLD + DELTA)) - W * HE_S
             * (PSSK - 0.5 * findSaturatedVaporPressureTorr((X_OLD + DELTA))))
-        X = X_OLD - DELTA * ERR1 / (ERR2 - ERR1)
+        try:
+            X = X_OLD - DELTA * ERR1 / (ERR2 - ERR1)
+        except ZeroDivisionError:
+            break
         dx = X - X_OLD
         X_OLD = X
 

@@ -108,3 +108,4 @@ data/data_manual.pdf
 data/big/*
 data/thread/*
 report_*.csv
+export/*

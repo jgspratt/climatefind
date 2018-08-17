@@ -16,6 +16,7 @@ import ntpath
 import colorama
 import datetime
 from time import strftime
+import numbers
 
 
 
@@ -104,7 +105,7 @@ def comfy(dry_bulb_c, dew_point_c, rhum_percent, wspd_m_s, lprecip_depth_mm, hou
 ## Setup logging
 ################
 log = logging.getLogger('main')
-log.setLevel(logging.INFO)
+log.setLevel(logging.WARNING)
 logFormatter = logging.Formatter(fmt=config['LOG_FORMAT'], style='{', datefmt=config['LOG_DATE_FORMAT'])
 
 consoleHandler = logging.StreamHandler()
@@ -150,7 +151,10 @@ for sample_file in files_list:
   meta_header_file = pandas.read_csv(sample_file, nrows=1, header=None, names=config['META_HEADER_ROWS'])
   for column in config['META_HEADER_ROWS']:
     meta_header[column] = str(meta_header_file.at[0,column])
-    station_meta.append(meta_header[column])
+    try:
+      station_meta.append(round(float(meta_header[column]),3))
+    except ValueError:
+      station_meta.append(meta_header[column])
   
   file_code = str(ntpath.basename(sample_file)[:-4])
   
@@ -235,9 +239,11 @@ for sample_file in files_list:
   progress_bar_months.close()
   
   comfy_days_in_year = 0
-  comfy_months_in_year = 0
+  comfy_months_in_year_count = 0
+  comfy_days_in_months_percent = []
   for month, days in year.items():
     comfy_days_in_month = 0
+    total_days_in_month = len(days.items())
     for day, hours in days.items():
       comfy_hours = 0
       for hour, cols in hours.items():
@@ -251,19 +257,21 @@ for sample_file in files_list:
       else:
         # print(f'{month:02}-{day:02}')
         pass
-    if comfy_days_in_month >= config['MIN_COMFY_DAYS_PER_MONTH']:
-      comfy_months_in_year += 1
+    comfy_days_in_month_percent = round((comfy_days_in_month/total_days_in_month)*100)
+    comfy_days_in_months_percent.append(comfy_days_in_month_percent)
+    if comfy_days_in_month_percent >= config['MIN_COMFY_DAYS_PER_MONTH_PERCENT']:
+      comfy_months_in_year_count += 1
     log.info(f'  month {month:02} ({calendar.month_abbr[month]}): {comfy_days_in_month: >2} comfy days')
   
   comfy_days_in_year_percent = round((comfy_days_in_year/365)*100)
-  comfy_months_in_year_percent = round((comfy_months_in_year/12)*100)
+  comfy_months_in_year_percent = round((comfy_months_in_year_count/12)*100)
   
   log.info(f'\n  Typical year: {comfy_days_in_year} comfy days   ({comfy_days_in_year_percent: >3}%)')
-  log.info(f'                  {comfy_months_in_year} comfy months ({comfy_months_in_year_percent: >3}%)\n\n')
+  log.info(f'                  {comfy_months_in_year_count} comfy months ({comfy_months_in_year_percent: >3}%)\n\n')
   
   log.info(f'calculate comfyness for {file_code}: {meta_header["station_name"]}, {meta_header["station_state"]} - done')
   
-  comfyness_report[file_code] = (station_meta + [comfy_days_in_year, comfy_months_in_year, comfy_days_in_year_percent, comfy_months_in_year_percent])
+  comfyness_report[file_code] = (station_meta + [comfy_days_in_year, comfy_months_in_year_count, comfy_days_in_year_percent, comfy_months_in_year_percent] + comfy_days_in_months_percent)
   
   progress_bar_files.update(1)
 
@@ -273,11 +281,30 @@ time.sleep(2)
 
 # print(comfyness_report)
 
-write_out_this = pandas.DataFrame.from_dict(data=comfyness_report, orient='index', columns=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year', 'comfy_days_in_year_percent', 'comfy_months_in_year_percent']))
+write_out_this = pandas.DataFrame.from_dict(
+  data=comfyness_report,
+  orient='index', 
+  columns=(
+    config['META_HEADER_ROWS'] + 
+    ['comfy_days_in_year', 'comfy_months_in_year', 'comfy_days_in_year_percent', 'comfy_months_in_year_percent'] + 
+    [f'month_{x}_%' for x in range(1,13)]
+  )
+)
 
 # print(write_out_this)
 
-write_out_this.to_csv(f'{config["OUTPUT_FILENAME"]}_{config["MODE"]}_{config["SPEED"]}_{strftime("%Y-%m-%d_%H%M%S")}.{config["OUTPUT_EXT"]}', header=(config['META_HEADER_ROWS'] + ['comfy_days_in_year', 'comfy_months_in_year', 'comfy_days_in_year_percent', 'comfy_months_in_year_percent']))
+output_file_folder = f'export/{strftime("%Y-%m-%d")}'
+os.mkdir(output_file_folder)
+output_file_path = f'{output_file_folder}/{config["MODE"]}_{config["SPEED"]}_{strftime("%Y-%m-%d_%H%M%S")}_{config["OUTPUT_FILENAME"]}.{config["OUTPUT_EXT"]}'
+
+write_out_this.to_csv(
+  output_file_path,
+  header=(
+    config['META_HEADER_ROWS'] + 
+    ['comfy_days_in_year', 'comfy_months_in_year', 'comfy_days_in_year_percent', 'comfy_months_in_year_percent'] + 
+    [f'month_{x}_%' for x in range(1,13)]
+  )
+)
 
 # with open('comfyness_report.csv', 'w') as csv_file:
 #     writer = csv.writer(csv_file)

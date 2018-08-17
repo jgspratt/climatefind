@@ -11,7 +11,7 @@ OUTPUT_EXT: csv
 
 MODE: 'DATA_SMALL'  # DATA_BIG or DATA_SMALL
 MAX_FILES: 10000
-SPEED: 'SLOW'  # FAST or SLOW
+SPEED: 'FAST'  # FAST or SLOW
 
 ## Data dir config
 DATA_BIG: 'data/big/*.CSV'
@@ -20,6 +20,9 @@ DATA_THREAD_1: 'data/thread/1/*.CSV'
 DATA_THREAD_2: 'data/thread/2/*.CSV'
 DATA_THREAD_3: 'data/thread/3/*.CSV'
 DATA_THREAD_4: 'data/thread/4/*.CSV'
+
+
+## Export Data File
 
 
 META_HEADER_ROWS:
@@ -63,7 +66,7 @@ EARLIEST_HOUR: 9
 LATEST_HOUR: 18
 MAX_DEW_POINT: 15
 MIN_COMFY_HOURS: 6
-MIN_COMFY_DAYS_PER_MONTH: 15
+MIN_COMFY_DAYS_PER_MONTH_PERCENT: 50
 
 # Fast vars
 MIN_DRY_BULB_C: 12
