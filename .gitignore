@@ -1,3 +1,19 @@
+*~
+.DS_Store
+ignore
+ignore.*
+*.ignore.*
+*.ignore
+*.ignore.*
+*.build.*
+*.log
+*.log.*
+*.out
+*.out.*
+*.tmp
+tmp.*
+*.tmp.*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -102,10 +118,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-# extras
-data/data_manual.pdf
-data/big/*
-data/thread/*
-report_*.csv
-export/*

@@ -16,7 +16,7 @@ The resulting output graphs were generated and stored in the `output/` directory
 
 ## Global Historical Climatology Network (GHCN) Version
 
-The next generation software was based on the GHCN data set.
+The next generation software was based on the [GHCN data set](https://www.ncei.noaa.gov/data/daily-summaries/archive/daily-summaries-latest.tar.gz).
 As of 2021-01-01, this project is starting.
 
 The main advanatage of this version is the geographic density of locations (approximately 60,000 US locations in total over the entire data set).

@@ -1,0 +1,6 @@
+# climatefind tmy3 output
+data/data_manual.pdf
+data/big/*
+data/thread/*
+report_*.csv
+export/*
