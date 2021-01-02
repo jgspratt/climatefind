@@ -1,0 +1,512 @@
+US1WVBB0001  39.1503  -80.0575  433.4 WV PHILIPPI 0.7 W                              
+US1WVBK0001  40.2680  -80.5966  303.3 WV WELLSBURG 1.2 SE                            
+US1WVBN0001  37.9877  -81.8675  268.2 WV DANVILLE 6.7 SSW                            
+US1WVBN0002  38.1079  -81.6228  221.0 WV SETH SE 0.0                                 
+US1WVBN0004  38.0676  -81.8633  282.2 WV DANVILLE 1.8 WSW                            
+US1WVBY0001  39.3368  -78.0680  196.9 WV BUNKER HILL 0.8 WNW                         
+US1WVBY0002  39.5875  -77.9181  149.4 WV FALLING WATERS 2.4 NW                       
+US1WVBY0004  39.5136  -77.8362  135.3 WV MARTINSBURG 8.0 ENE                         
+US1WVBY0006  39.4486  -77.8905  144.5 WV MARTINSBURG 4.3 E                           
+US1WVBY0013  39.4349  -77.9267  138.1 WV MARTINSBURG 2.9 SE                          
+US1WVCB0002  38.4060  -82.3813  178.6 WV HUNTINGTON 2.9 E                            
+US1WVCB0006  38.4347  -82.2939  177.1 WV HUNTINGTON 7.7 E                            
+US1WVCB0008  38.4082  -82.4443  173.4 WV HUNTINGTON 0.6 WSW                          
+US1WVCB0011  38.3980  -82.4340  267.6 WV HUNTINGTON 1.0 S                            
+US1WVCB0017  38.4056  -82.4036  205.7 WV HUNTINGTON 1.7 ESE                          
+US1WVCY0001  38.4831  -81.1597  230.4 WV PROCIOUS 2.4 ESE                            
+US1WVDD0001  39.4195  -80.6561  252.1 WV CENTER POINT 2.2 NNW                        
+US1WVDD0002  39.3910  -80.6830  239.9 WV WEST UNION 8.2 NE                           
+US1WVDD0003  39.3533  -80.6926  258.5 WV WEST UNION 5.9 NE                           
+US1WVDD0004  39.1255  -80.7068  284.7 WV AUBURN 8.3 ENE                              
+US1WVDD0006  39.2996  -80.6345  289.9 WV SALEM 3.9 WNW                               
+US1WVDD0008  39.2729  -80.6763  253.9 WV WEST UNION 5.6 ESE                          
+US1WVDD0009  39.2722  -80.7323  260.0 WV WEST UNION 2.9 SE                           
+US1WVDD0010  39.4213  -80.5975  270.4 WV CENTER POINT 2.9 NE                         
+US1WVFY0001  38.0600  -81.1100  519.1 WV FAYETTEVILLE 0.6 NNW                        
+US1WVGB0002  37.7059  -80.4232  700.1 WV RONCEVERTE 4.0 SE                           
+US1WVGB0004  37.9705  -80.7667  746.2 WV RAINELLE 0.3 ENE                            
+US1WVGL0002  39.0654  -80.7506  266.1 WV TROY 3.2 NNE                                
+US1WVGL0003  39.0891  -80.7820  246.0 WV AUBURN 4.0 E                                
+US1WVGL0004  38.9533  -80.9421  280.7 WV GLENVILLE 5.9 W                             
+US1WVHM0001  39.4432  -78.6521  185.9 WV SPRINGFIELD 2.3 ESE                         
+US1WVHM0002  39.3482  -78.5016  236.2 WV SLANESVILLE 2.1 SE                          
+US1WVHM0004  39.4136  -78.7386  199.9 WV SPRINGFIELD 3.5 SW                          
+US1WVHN0003  40.6090  -80.5648  238.7 WV CHESTER 0.2 SSW                             
+US1WVHS0003  39.2663  -80.3782  330.1 WV CLARKSBURG 2.7 WSW                          
+US1WVHS0006  39.3057  -80.2677  371.2 WV BRIDGEPORT 1.1 NNW                          
+US1WVHS0009  39.3782  -80.4936  332.5 WV WALLACE 2.2 S                               
+US1WVHY0002  39.0432  -79.0496  339.9 WV RIG 0.4 NW                                  
+US1WVHY0003  39.0113  -78.9451  306.9 WV MOOREFIELD 3.7 SSE                          
+US1WVJC0001  38.8083  -81.7345  298.4 WV RIPLEY 1.6 WSW                              
+US1WVJC0003  38.7377  -81.6904  283.5 WV RIPLEY 5.8 S                                
+US1WVJC0007  38.7644  -81.5516  243.8 WV GAY 0.4 SSE                                 
+US1WVJF0002  39.3386  -77.7882  133.5 WV HARPERS FERRY 2.6 WNW                       
+US1WVJF0003  39.3331  -77.8098  173.1 WV SHENANDOAH JUNCTION 2.8 SE                  
+US1WVJF0005  39.3191  -77.8268  144.5 WV CHARLES TOWN 2.9 NE                         
+US1WVJF0006  39.3154  -77.8304  149.4 WV CHARLES TOWN 2.5 NE                         
+US1WVJF0007  39.2922  -77.9081  171.9 WV CHARLES TOWN 2.7 W                          
+US1WVJF0012  39.2309  -77.8008  177.4 WV HARPERS FERRY 7.2 SSW                       
+US1WVKN0001  38.2872  -81.7874  216.1 WV ALUM CREEK 3.0 E                            
+US1WVKN0002  38.2982  -81.7506  326.4 WV SOUTH CHARLESTON 4.7 SSW                    
+US1WVKN0009  38.3759  -81.8093  189.0 WV ST. ALBANS 0.5 ESE                          
+US1WVKN0010  38.3225  -81.7269  256.3 WV SOUTH CHARLESTON 2.6 SSW                    
+US1WVKN0018  38.3448  -81.9017  215.5 WV ST. ALBANS 5.1 WSW                          
+US1WVKN0019  38.3610  -81.8525  195.1 WV ST. ALBANS 2.3 WSW                          
+US1WVKN0021  38.3335  -81.6987  243.5 WV CHARLESTON 3.9 WSW                          
+US1WVKN0025  38.3807  -81.5313  240.2 WV CHARLESTON 5.8 ENE                          
+US1WVKN0026  38.3499  -81.7519  243.5 WV SOUTH CHARLESTON 2.5 W                      
+US1WVKN0027  38.3832  -81.5450  282.9 WV PINCH 3.9 WSW                               
+US1WVKN0031  38.3494  -81.6734  262.1 WV CHARLESTON 2.3 W                            
+US1WVKN0033  38.3442  -81.6785  290.8 WV CHARLESTON 2.6 W                            
+US1WVKN0034  38.3844  -81.8131  178.9 WV ST. ALBANS 0.5 NNE                          
+US1WVLN0003  38.1864  -82.1116  215.8 WV BRANCHLAND 5.5 ESE                          
+US1WVLW0001  38.9890  -80.6772  285.3 WV LINN 2.6 SE                                 
+US1WVLW0002  39.1028  -80.4325  330.1 WV JANE LEW 1.3 WSW                            
+US1WVLW0004  38.8394  -80.3963  487.1 WV CRAWFORD 2.9 SE                             
+US1WVMA0001  39.4439  -80.1694  313.6 WV FAIRMONT 2.8 SSW                            
+US1WVMA0002  39.4661  -80.2024  389.5 WV MONONGAH 0.9 ENE                            
+US1WVMA0007  39.5982  -80.2452  313.3 WV FAIRVIEW 0.4 NNE                            
+US1WVMA0010  39.5559  -80.1212  302.1 WV RIVESVILLE 1.7 N                            
+US1WVMC0003  37.2528  -81.2332  768.1 WV BLUEFIELD 1.0 SW                            
+US1WVMC0011  37.3719  -81.0982  760.5 WV PRINCETON 0.3 NNW                           
+US1WVMG0001  39.5924  -79.9166  399.0 WV MORGANTOWN 3.5 SSE                          
+US1WVMG0005  39.6292  -79.9282  282.2 WV MORGANTOWN 1.2 ESE                          
+US1WVMG0007  39.6087  -80.0641  336.8 WV MORGANTOWN 6.4 WSW                          
+US1WVMG0016  39.5662  -80.0149  378.6 WV MORGANTOWN 5.9 SW                           
+US1WVMH0002  39.9760  -80.6210  269.4 WV MCMECHEN 6.0 E                              
+US1WVMH0004  39.9604  -80.7459  322.8 WV GLEN DALE 1.0 NE                            
+US1WVML0002  39.4269  -78.9216  280.4 WV KEYSER 3.4 ESE                              
+US1WVML0003  39.4142  -79.0028  273.7 WV KEYSER 2.0 SSW                              
+US1WVML0005  39.5454  -78.8124  249.6 WV KEYSER 11.7 NE                              
+US1WVMN0001  39.6331  -78.2100  237.7 WV BERKELEY SPRINGS 1.0 ENE                    
+US1WVMR0002  37.7153  -80.6481  527.9 WV ALDERSON 0.8 SSW                            
+US1WVMS0001  38.8611  -82.0225  207.0 WV POINT PLEASANT 5.8 E                        
+US1WVMS0002  39.0030  -82.0349  250.9 WV CLIFTON 0.4 E                               
+US1WVNC0001  38.2028  -80.9430  522.7 WV SUMMERSVILLE 7.8 SW                         
+US1WVNC0002  38.2540  -80.7195  755.0 WV CANVAS 3.1 ESE                              
+US1WVNC0003  38.1427  -80.8537  671.8 WV RUNA 0.1 W                                  
+US1WVNC0004  38.3370  -80.6452  682.8 WV CRAIGSVILLE 0.6 NE                          
+US1WVNC0005  38.1932  -80.7000  787.3 WV NETTIE 1.9 SSW                              
+US1WVOH0002  40.1382  -80.6561  346.3 WV WHEELING 4.9 NNE                            
+US1WVOH0006  40.1380  -80.5435  338.6 WV VALLEY GROVE 3.5 NNE                        
+US1WVPC0001  38.4455  -79.8267  816.9 WV ARBOVALE 0.8 NW                             
+US1WVPC0003  38.2842  -80.0588  794.9 WV MARLINTON 4.5 NNE                           
+US1WVPC0004  38.3566  -79.9621  735.8 WV CASS 3.7 SW                                 
+US1WVPL0001  39.3585  -81.0359  256.6 WV ST. MARYS 9.1 ESE                           
+US1WVPN0001  38.7182  -79.1428  544.4 WV FORT SEYBERT 3.0 NE                         
+US1WVPR0003  39.3608  -79.6897  435.9 WV ROWLESBURG 1.1 NW                           
+US1WVPR0008  39.4720  -79.6716  536.1 WV KINGWOOD 0.6 E                              
+US1WVPR0010  39.5102  -79.5102  887.3 WV TERRA ALTA 4.9 NNE                          
+US1WVPR0011  39.2536  -79.5106  774.5 WV THOMAS 7.4 N                                
+US1WVPT0004  38.4510  -81.9745  212.1 WV HURRICANE 2.5 ENE                           
+US1WVPT0006  38.5249  -81.8965  181.1 WV WINFIELD 0.7 W                              
+US1WVPT0007  38.4262  -81.9067  297.2 WV TEAYS VALLEY 1.9 SE                         
+US1WVPT0010  38.4156  -82.0278  243.8 WV HURRICANE 1.6 SSW                           
+US1WVPT0011  38.5365  -81.9319  181.1 WV ELEANOR 0.2 SSW                             
+US1WVRL0002  37.7770  -81.1742  721.5 WV BECKLEY 1.0 SE                              
+US1WVRL0006  37.6627  -81.0903  903.7 WV COOL RIDGE 0.4 NE                           
+US1WVRT0001  39.2104  -81.0596  265.2 WV HARRISVILLE 0.5 W                           
+US1WVRT0002  39.2736  -80.9558  344.7 WV PENNSBORO 1.2 ESE                           
+US1WVTA0003  39.3782  -80.1786  379.2 WV BOOTHSVILLE 1.4 SE                          
+US1WVTY0003  39.4700  -80.8571  232.0 WV MIDDLEBOURNE 3.2 ESE                        
+US1WVTY0004  39.5370  -80.8880  224.0 WV SISTERSVILLE 6.1 ESE                        
+US1WVUP0001  38.8423  -80.2723  566.0 WV ROCK CAVE 3.0 E                             
+US1WVUP0002  38.9769  -80.1300  607.2 WV BUCKHANNON 5.2 E                            
+US1WVWD0001  39.2335  -81.4408  217.3 WV DAVISVILLE 3.8 NE                           
+US1WVWD0003  39.3001  -81.5108  271.0 WV PARKERSBURG 3.0 NE                          
+US1WVWD0005  39.1645  -81.5792  199.6 WV MINERALWELLS 3.8 WSW                        
+US1WVWD0006  39.0566  -81.5503  325.2 WV ROCKPORT 1.3 SSE                            
+US1WVWD0007  39.4028  -81.4572  195.1 WV WILLIAMSTOWN 0.4 WNW                        
+US1WVWD0009  39.2667  -81.5617  187.5 WV PARKERSBURG 1.0 W                           
+US1WVWD0011  39.3378  -81.5223  214.6 WV VIENNA 1.3 NE                               
+US1WVWD0012  39.3273  -81.5499  193.2 WV VIENNA 0.7 WNW                              
+US1WVWT0001  39.6490  -80.7382  413.6 WV NEW MARTINSVILLE 6.5 E                      
+USC00460012  39.0667  -80.3000  326.1 WV ABERDEEN                                    
+USC00460094  39.4881  -79.6369  371.6 WV ALBRIGHT                                    
+USC00460102  37.7272  -80.6583  473.0 WV ALDERSON                                    
+USC00460107  38.7833  -80.2167  566.9 WV ALEXANDER                                   
+USC00460143  38.9167  -79.6667  921.1 WV ALPENA 1 NW                                 
+USC00460170  39.0333  -80.6667 -999.9 WV ALUM/BRIDGE LEWIS                           
+USC00460202  38.1211  -81.1178  395.0 WV ANSTEAD HAWKS NEST SP                       
+USC00460249  38.4333  -79.8167  833.0 WV ARBOVALE 2                                  
+USC00460307  38.9000  -80.5167  299.0 WV ARNOLD                                      
+USC00460355  37.4225  -81.0256  760.5 WV ATHENS                                      
+USC00460370  39.0931  -80.8500  281.9 WV AUBURN                                      
+USC00460450  38.5167  -81.8500  175.0 WV BANCROFT                                    
+USC00460509  38.5311  -79.7714  922.0 WV BARTOW 1S                                   
+USC00460527  39.2728  -79.3683  735.2 WV BAYARD                                      
+USC00460580  37.7647  -81.1942  710.2 WV BECKLEY VA HOSPITAL                         
+USC00460633  39.0231  -79.9331  539.2 WV BELINGTON                                   
+USC00460645  39.1500  -81.7500  182.9 WV BELLEVILLE DAM 2O                           
+USC00460661  38.2333  -81.1833  244.1 WV BELVA                                       
+USC00460679  39.1500  -80.5500  328.9 WV BENSON                                      
+USC00460687  39.4667  -81.1000  195.1 WV BENS RUN 1 SSE                              
+USC00460710  39.6167  -78.2167  223.1 WV BERKELEY SPRINGS                            
+USC00460712  39.5719  -78.2503  285.0 WV BERKELEY SPRINGS 3 S                        
+USC00460718  39.0500  -80.3500  320.0 WV BERLIN                                      
+USC00460740  38.8500  -79.8667  685.8 WV BEVERLY                                     
+USC00460784  38.6033  -81.0328  266.7 WV BIG OTTER                                   
+USC00460824  38.9667  -80.4333  320.0 WV BIG SKIN CREEK                              
+USC00460842  38.4919  -80.8022  454.2 WV BIRCH RIVER 3 WSW                           
+USC00460843  38.4569  -80.7931  655.3 WV BIRCH RIVER 4 SW                            
+USC00460844  38.4000  -80.8000  576.1 WV BIRCH RIVER 6 SSW                           
+USC00460900  39.4000  -78.3667 -999.9 WV BLOOMERY                                    
+USC00460918  37.2667  -81.2667  796.1 WV BLUEFIELD 2 NW                              
+USC00460923  37.2667  -81.2167  790.0 WV BLUEFIELD 2                                 
+USC00460925  37.2556  -81.2264  874.8 WV BLUEFIELD                                   
+USC00460926  37.2833  -81.2000  869.0 WV BLUEFIELD MERCER CO                         
+USC00460939  37.6414  -80.8833  423.7 WV BLUESTONE LAKE                              
+USC00461050  37.3333  -81.3000  701.0 WV BRAMWELL                                    
+USC00461075  38.2347  -82.2033  182.9 WV BRANCHLAND 1 N                              
+USC00461083  39.6667  -79.6167  548.0 WV BRANDONVILLE                                
+USC00461091  38.6167  -79.2333  502.9 WV BRANDYWINE                                  
+USC00461173  39.0000  -80.4833  313.9 WV BROWNSVILLE                                 
+USC00461183  39.6667  -79.6333  472.1 WV BRUCETON MILLS                              
+USC00461196  39.2167  -80.2167  313.9 WV BRUSHY FORK                                 
+USC00461204  38.8333  -79.2500  419.1 WV BRUSHY RUN                                  
+USC00461215  38.1872  -80.1336  647.1 WV BUCKEYE                                     
+USC00461220  38.9803  -80.2200  443.5 WV BUCKHANNON                         HCN      
+USC00461231  38.6083  -81.9847  176.8 WV BUFFALO                                     
+USC00461260  39.3333  -78.9000  266.7 WV BURLINGTON                                  
+USC00461282  38.8458  -80.6200  249.6 WV BURNSVILLE LAKE                             
+USC00461290  39.6467  -80.4067  378.0 WV BURTON                                      
+USC00461319  37.9833  -82.3500  225.9 WV CABWAYLINGO SF                              
+USC00461324  39.5094  -78.2975  292.0 WV CACAPON ST PK #2                            
+USC00461325  39.5167  -78.3000  335.3 WV CACAPON STATE PARK (1)                      
+USC00461328  39.1667  -81.1667  207.0 WV CAIRO 3 S                                   
+USC00461330  39.2047  -81.1572  231.6 WV CAIRO                              HCN      
+USC00461358  38.5167  -80.6333  618.4 WV CAMDEN                                      
+USC00461363  38.3567  -80.6294  676.7 WV CAMDEN ON GAULEY 2 SW                       
+USC00461393  39.0500  -79.4167  990.3 WV CANAAN VALLEY                               
+USC00461397  39.0483  -79.4406  991.8 WV CANAAN VALLEY #2                            
+USC00461515  38.8000  -80.3667  289.6 WV CENTRAL STATION                             
+USC00461526  38.6231  -80.5664  313.9 WV CENTRALIA                                   
+USC00461575  38.3500  -81.6500  182.9 WV CHARLESTON 1                                
+USC00461579  38.3133  -81.7186  279.8 WV CHARLESTON WFO                              
+USC00461585  38.3500  -81.6333  182.9 WV CHARLESTON 3                                
+USC00461588  39.2981  -77.8344  158.5 WV CHARLES TOWN 2 SE                           
+USC00461591  38.6106  -79.8772 1086.6 WV CHEAT BRG                                   
+USC00461609  40.6167  -80.5500  213.4 WV CHESTER                                     
+USC00461677  39.2683  -80.3522  301.8 WV CLARKSBURG 1                                
+USC00461682  39.2833  -80.3333  305.1 WV CLARKSBURG 2                                
+USC00461696  38.4597  -81.0850  222.5 WV CLAY                                        
+USC00461701  38.4667  -81.0667  207.0 WV CLAY 2                                      
+USC00461723  38.4933  -81.3483  213.4 WV CLENDENIN                                   
+USC00461798  37.3833  -81.6500  442.0 WV COALWOOD                                    
+USC00461806  39.2500  -80.4333  328.9 WV COBURN CREEK                                
+USC00461900  39.6772  -79.7719  694.9 WV COOPERS ROCK SF                             
+USC00461940  39.0833  -79.4333 1005.8 WV CORTLAND                                    
+USC00461959  38.4864  -81.2711  195.1 WV CORTON                                      
+USC00462013  38.1833  -80.2667 1036.9 WV CRANBERRY GLADES                            
+USC00462022  38.8667  -80.4333  338.9 WV CRAWFORD                                    
+USC00462054  38.9628  -81.2728  198.1 WV CRESTON                                     
+USC00462095  38.9667  -81.6667  198.1 WV CUBA                                        
+USC00462151  38.7825  -79.8911  609.6 WV DAILEY 1 SE                                 
+USC00462209  39.1333  -79.4667  951.9 WV DAVIS                                       
+USC00462211  39.0981  -79.4322 1132.3 WV DAVIS 3SE                                   
+USC00462212  39.0000  -79.5000 1005.8 WV DAVIS 2                                     
+USC00462217  39.2667  -80.4000  305.1 WV DAVISSON RUN                                
+USC00462358  38.5000  -80.8167  390.1 WV DILLE 1 NE                                  
+USC00462462  37.8600  -81.4631  385.3 WV DRY CREEK                                   
+USC00462488  39.1500  -80.4000  326.1 WV DUCK CREEK                                  
+USC00462520  37.9833  -82.3333  335.9 WV DUNLOW 5 SE                                 
+USC00462522  37.9494  -82.4047  339.2 WV DUNLOW 1 SW                                 
+USC00462552  38.5500  -79.7667  830.3 WV DURBIN                                      
+USC00462590  39.2000  -81.6167  781.2 WV EAST BANK                                   
+USC00462622  38.1436  -82.3825  227.7 WV E LYNN LAKE                                 
+USC00462638  38.0000  -80.7500  737.9 WV EAST RAINELLE 3 NNE                         
+USC00462650  38.1833  -82.4667  304.8 WV ECHO                                        
+USC00462695  39.1167  -81.4000  187.5 WV ELIZABETH                                   
+USC00462697  39.0614  -81.4022  196.0 WV ELIZABETH                                   
+USC00462701  39.1833  -80.2333  305.1 WV ELK                                         
+USC00462709  37.3872  -81.4053  593.8 WV ELKHORN                                     
+USC00462716  38.9244  -79.8611  596.8 WV ELKINS                                      
+USC00462717  38.9267  -79.8294  611.1 WV ELKINS 1N                                   
+USC00462735  39.7333  -80.8167 -999.9 WV ELLA                                        
+USC00462746  39.2667  -81.0667  241.1 WV ELLENBORO                                   
+USC00462860  38.8000  -81.7500  243.8 WV EVANS                                       
+USC00462875  38.9000  -80.3667  987.6 WV EVENWOOD                                    
+USC00462920  39.4583  -80.1353  396.2 WV FAIRMONT                                    
+USC00463024  39.0000  -80.2667  433.1 WV FINK RUN                                    
+USC00463072  37.5894  -81.0925 1016.5 WV FLAT TOP                                    
+USC00463100  39.2667  -80.1333 -999.9 WV FLEMINGTON                                  
+USC00463215  38.6756  -79.3092  579.1 WV FRANKLIN 2 NE                               
+USC00463238  39.1303  -80.4506  310.9 WV FREEMANSBURG 5 NE                           
+USC00463251  38.2869  -79.8181  885.4 WV FROST 3NE                                   
+USC00463353  37.3667  -81.5500  435.9 WV GARY                                        
+USC00463361  38.6650  -80.7672  258.5 WV GASSAWAY                                    
+USC00463464  38.8072  -79.7172  865.6 WV GLADY 1 N                                   
+USC00463544  38.9339  -80.8317  224.9 WV GLENVILLE                          HCN      
+USC00463627  39.3439  -80.0281  339.2 WV GRAFTON                                     
+USC00463630  39.3500  -80.0000  374.9 WV GRAFTON 1 NE                                
+USC00463648  38.9100  -81.0844  215.2 WV GRANTSVILLE 1ESE                            
+USC00463670  39.6333  -78.6333  152.4 WV GREAT CACAPON                               
+USC00463671  37.5375  -80.6633  507.2 WV GREENVILLE 1 SE                             
+USC00463672  37.8167  -80.8667  487.7 WV GREEN SULPHUR SPRINGS                       
+USC00463675  38.7433  -80.5278  265.2 WV GREGORY                                     
+USC00463749  38.2381  -81.9853  237.7 WV GRIFFITHSVILLE                              
+USC00463793  39.1333  -80.4333  310.9 WV HACKERS CREEK                               
+USC00463798  38.6194  -80.3822  482.2 WV HACKER VALLEY                               
+USC00463816  39.0500  -80.1167  420.9 WV HALL                                        
+USC00463846  38.2794  -82.1114  207.3 WV HAMLIN                                      
+USC00463927  39.3233  -77.7289   75.0 WV HARPERS FERRY RIVER                         
+USC00463932  39.3167  -77.7333   88.1 WV HARPERS FERRY NP                            
+USC00463935  39.3667  -79.2000  519.1 WV HARRISON                                    
+USC00463940  39.2189  -81.0486  250.9 WV HARRISVILLE                                 
+USC00463974  39.5500  -80.6667  232.0 WV HASTINGS                                    
+USC00464045  38.5000  -80.0000 -999.9 WV HELVETIA                                    
+USC00464085  37.9333  -81.8667 -999.9 WV HEWETT                                      
+USC00464128  38.1225  -81.0081  713.2 WV HICO                                        
+USC00464170  37.6667  -80.8833  435.9 WV HINTON 1                                    
+USC00464175  37.6667  -80.8833  415.1 WV HINTON 2                                    
+USC00464200  38.6842  -82.1839  173.7 WV HOGSETT RC BYRD DAM                         
+USC00464230  38.3000  -80.4333  622.4 WV HOLCOMB                                     
+USC00464264  39.4333  -79.5167  759.0 WV HOPEMONT                                    
+USC00464281  38.9833  -80.3667  328.9 WV HORNER                                      
+USC00464292  38.8000  -80.4500  865.6 WV HORTON                                      
+USC00464309  39.5000  -80.1333  267.9 WV HOULT LOCK 15                               
+USC00464369  39.7000  -80.4667  304.8 WV HUNDRED                                     
+USC00464372  39.7000  -80.4500  320.0 WV HUNDRED 1 N                                 
+USC00464378  38.4167  -82.3667  207.0 WV HUNTINGTON 1                                
+USC00464383  38.4167  -82.4333  182.9 WV HUNTINGTON 2                                
+USC00464388  38.4167  -82.4500  172.2 WV HUNTINGTON FEDERAL BLD                      
+USC00464397  38.4014  -82.5267  158.5 WV HUNTINGTON SWG PL                           
+USC00464408  37.4503  -81.8236  326.1 WV IAEGER 1SW                                  
+USC00464430  37.5667  -80.8000 -999.9 WV INDIAN MILLS                                
+USC00464455  38.3833  -81.6667  184.7 WV INST WERTZ FLD                              
+USC00464470  39.3667  -78.0500  174.0 WV INWOOD                                      
+USC00464478  38.8167  -80.4667  348.1 WV IRELAND                                     
+USC00464499  39.2000  -80.5000  323.1 WV ISAACS CREEK                                
+USC00464559  39.1167  -80.4167  307.8 WV JANE LEW                                    
+USC00464619  39.1000  -80.3333  342.0 WV JESSE RUN                                   
+USC00464631  38.2333  -81.1333  235.0 WV JODIE                                       
+USC00464697  39.3167  -78.8667  244.1 WV JUNCTION                                    
+USC00464727  38.1381  -81.2144  189.0 WV KANAWHA FALLS                               
+USC00464755  38.0167  -81.4500  409.0 WV KAYFORD                                     
+USC00464763  39.3833  -77.8833  167.6 WV KEARNEYSVILLE                               
+USC00464816  37.8333  -82.4000  189.0 WV KERMIT                                      
+USC00464836  39.4333  -78.9833  284.1 WV KEYSER                                      
+USC00464840  39.4214  -79.0050  294.1 WV KEYSER 2 SSW                                
+USC00464884  37.9500  -81.3000  451.4 WV KINGSTON                                    
+USC00464897  39.4667  -79.6833  566.9 WV KINGWOOD                                    
+USC00464941  39.3667  -79.0000  409.0 WV KNOBLY MTN                                  
+USC00464956  37.7333  -81.5833  506.0 WV KOPPERSTON                                  
+USC00464971  38.6314  -80.0856  986.0 WV KUMBRABOW                                   
+USC00464994  39.2833  -80.5000  338.9 WV LAKE FLOYD                                  
+USC00465002  39.7203  -79.8561  274.3 WV LAKE LYNN                                   
+USC00465010  38.9500  -82.0833  189.0 WV LAKIN                                       
+USC00465030  39.1000  -81.5000 -999.9 WV LEACHTOWN                                   
+USC00465045  38.0667  -80.4000 1293.0 WV LEONARD                                     
+USC00465051  38.5697  -82.2878  175.3 WV LESAGE 5 N                                  
+USC00465055  38.5500  -82.2833  167.6 WV LESAGE GREENBOTTOM                          
+USC00465224  37.8567  -80.4042  701.0 WV LEWISBURG 3 N                      HCN      
+USC00465284  37.4797  -80.6556  605.0 WV LINDSIDE                                    
+USC00465314  38.9667  -80.4167  326.1 WV LITTLE SKIN CREEK                           
+USC00465323  38.8956  -81.5311  202.7 WV LIVERPOOL                                   
+USC00465341  38.8500  -80.9667  219.5 WV LOCKNEY                                     
+USC00465353  37.8664  -81.9844  204.8 WV LOGAN                                       
+USC00465365  38.1933  -81.3700  192.6 WV LONDON LOCKS                                
+USC00465400  38.0667  -80.9667  702.0 WV LOOKOUT 2                                   
+USC00465440  38.9667  -78.8333  365.8 WV LOST CITY                                   
+USC00465445  39.2000  -80.4167  304.8 WV LOST CREEK NEAR                             
+USC00465453  38.9453  -78.7981  515.1 WV LOST RVR                                    
+USC00465455  38.8667  -78.8667  609.6 WV LOST RIVER STATE PARK                       
+USC00465547  39.0833  -81.2000  203.9 WV MACFARLAN                                   
+USC00465563  38.1025  -81.8464  210.0 WV MADISON 3NNW                                
+USC00465600  37.7447  -81.8872  218.5 WV MAN                                         
+USC00465621  39.5500  -80.3500  299.0 WV MANNINGTON 1 N                              
+USC00465626  39.5436  -80.4647  335.3 WV MANNINGTON 8 WNW                   HCN      
+USC00465672  38.2175  -80.0914  655.3 WV MARLINTON                                   
+USC00465705  39.4500  -77.9500  132.6 WV MARTINSBURG (1)                             
+USC00465706  39.4658  -77.9667  140.2 WV MARTINSBURG 2                               
+USC00465739  38.8722  -78.8617  469.4 WV MATHIAS                                     
+USC00465747  37.4167  -81.2500  762.9 WV MATOAKA                                     
+USC00465847  39.9833  -80.7333  200.9 WV MC MECHEN DAM 13                            
+USC00465855  39.1500  -78.9000  244.1 WV MC NEILL 2 NE                               
+USC00465871  37.9833  -80.7500  745.5 WV MCROSS                                      
+USC00465875  38.0181  -80.6825 1011.6 WV RUPERT 4 N                                  
+USC00465886  37.8833  -80.6667  747.1 WV MEADOW BLUFF 2 S                            
+USC00465963  39.4700  -80.8569  237.4 WV MIDDLEBOURNE 3 ESE                          
+USC00465970  38.5167  -80.1833 -999.9 WV MIDDLEBROOK                                 
+USC00465984  38.9500  -80.0833  552.0 WV MIDVALE                                     
+USC00466140  38.2500  -81.3833 -999.9 WV MONARCH                                     
+USC00466163  39.0461  -78.9664  271.3 WV MOOREFIELD 1 SSE                            
+USC00466168  39.2000  -78.8500  262.1 WV MOOREFIELD MC NEILL                         
+USC00466178  39.6667  -80.1000 -999.9 WV MOORESVILLE                                 
+USC00466207  39.6333  -79.9500  320.0 WV MORGANTOWN 1                                
+USC00466212  39.6203  -79.9697  251.5 WV MORGANTOWN L&D                              
+USC00466248  39.9056  -80.7550  189.0 WV MOUNDSVILLE                                 
+USC00466250  39.9333  -80.7667 -999.9 WV MOUNDSVILLE (1)                             
+USC00466276  39.2167  -80.3333  317.0 WV MT CLARE                                    
+USC00466284  38.1878  -80.8483  595.3 WV MT NEBO 1 S                                 
+USC00466293  39.2833  -79.2333  869.0 WV MT STORM                                    
+USC00466325  37.5783  -81.3272  476.7 WV MULLENS 3 E                                 
+USC00466343  38.2167  -82.1333  213.4 WV MYRA                                        
+USC00466362  37.8667  -81.4833  369.1 WV NAOMA                                       
+USC00466442  40.5261  -80.6275  205.7 WV NEW CUMBERLAND L/D                          
+USC00466467  39.6833  -80.8500  214.0 WV NEW MARTINSVILLE 4 NNE                      
+USC00466480  38.5833  -81.2000 -999.9 WV NEWTON                                      
+USC00466565  38.0667  -81.0167  686.4 WV NUTTALLBURG                                 
+USC00466591  37.9714  -81.1508  621.8 WV OAK HILL                                    
+USC00466600  37.6761  -81.6214  402.3 WV OCEANA 2 SE                                 
+USC00466602  37.6833  -81.6333  365.8 WV OCEANA 1                                    
+USC00466674  39.5000  -78.2833  289.9 WV OMPS                                        
+USC00466725  37.7000  -80.5000  678.2 WV ORGAN CAVE                                  
+USC00466743  38.7167  -79.6333 1097.3 WV OSCEOLA (1)                                 
+USC00466867  39.0736  -79.6339  541.0 WV PARSONS 3 SE                       HCN      
+USC00466868  39.1000  -79.6833  580.0 WV PARSONS 2                                   
+USC00466871  39.1167  -79.6833  487.7 WV PARSONS 2 N                                 
+USC00466900  37.3453  -81.9081  615.7 WV PAYNESVILLE 1 N                             
+USC00466912  38.4197  -82.2989  178.0 WV PEA RIDGE PSD                               
+USC00466920  39.2833  -80.9667 -999.9 WV PENNSBORO                                   
+USC00466940  39.0000  -78.6667  446.5 WV PERRY                                       
+USC00466952  38.9989  -79.1350  292.6 WV PETERSBURG                                  
+USC00466956  38.9667  -79.1667  366.1 WV PETERSBURG 3 SW                             
+USC00466960  38.8833  -79.2000  342.9 WV PETERSBURG 9 SSW                            
+USC00466982  39.1461  -80.0411  396.2 WV PHILIPPI                                    
+USC00466989  38.6789  -80.1958  877.8 WV PICKENS 2 N                        HCN      
+USC00466991  38.6667  -80.2167  844.3 WV PICKENS 1                                   
+USC00466996  38.6500  -80.2167  823.9 WV PICKENS 2                                   
+USC00466998  38.6167  -80.2167 1021.1 WV PICKENS 2                                   
+USC00467001  38.6167  -80.1833 1066.5 WV PICKENS 4 SSE                               
+USC00467004  39.4833  -79.0333  320.0 WV PIEDMONT                                    
+USC00467018  40.1478  -80.7014  195.1 WV PIKE ISLAND(LOCK & DAM)                     
+USC00467029  37.5742  -81.5356  402.3 WV PINEVILLE                          HCN      
+USC00467055  39.5167  -79.5333 -999.9 WV PLEASANT HILL PRESTON                       
+USC00467105  38.8500  -82.1333  174.0 WV POINT PLEASANT                              
+USC00467109  38.9167  -82.1333  170.7 WV POINT PLEASANT DAM 25                       
+USC00467110  38.9167  -82.0667  192.0 WV POINT PLEASANT 6 NNE                        
+USC00467112  38.9167  -82.1167  185.9 WV POINT PLEASANT 5 NNE                        
+USC00467115  39.0500  -80.5667  326.1 WV POLK CREEK                                  
+USC00467135  38.0833  -81.3167  275.5 WV POWELLTON                                   
+USC00467207  37.3853  -81.0822  725.7 WV PRINCETON                                   
+USC00467287  38.9186  -81.9108  177.1 WV RACINE LOCKS & DAM                          
+USC00467306  37.9667  -80.7833  737.9 WV RAINELLE                                    
+USC00467320  37.7667  -81.1667  649.2 WV RALEIGH                                     
+USC00467342  39.3247  -77.9203  170.7 WV RANSON 4NW                                  
+USC00467352  38.9500  -81.7667  177.1 WV RAVENSWOOD LOCK PARK                        
+USC00467372  37.5967  -81.8244  389.2 WV RD BAILEY LAKE                              
+USC00467425  39.5000  -79.7833  521.2 WV REEDSVILLE                                  
+USC00467427  39.5000  -79.8333  537.1 WV REEDSVILLE EXP FARM                         
+USC00467444  37.9667  -80.3500  580.0 WV RENICK 2 S                                  
+USC00467449  38.0000  -80.3667  655.9 WV RENICK 2                                    
+USC00467455  37.9914  -80.3644  634.0 WV RENICK 3                                    
+USC00467502  38.2500  -80.5500  668.1 WV RICHWOOD                                    
+USC00467503  38.2333  -80.5500  732.1 WV RICHWOOD                                    
+USC00467504  38.2667  -80.5167  929.9 WV RICHWOOD 3 NNE                              
+USC00467505  38.2000  -80.5167  954.3 WV RICHWOOD 1 SSE                              
+USC00467513  38.2061  -80.5206  941.8 WV RICHWOOD 1SSE                               
+USC00467536  38.9500  -80.3333  331.9 WV RT FORK OF STONECOAL                        
+USC00467552  38.8172  -81.7117  185.3 WV RIPLEY                                      
+USC00467598  38.9333  -80.4833  320.0 WV ROANOKE                                     
+USC00467614  38.6500  -81.9667  174.0 WV ROBERTSBURG                                 
+USC00467649  38.8561  -80.3075  533.1 WV ROCK CAVE 2 NE                              
+USC00467658  39.1333  -80.3333  317.0 WV ROCKFORD                                    
+USC00467718  38.9833  -80.5000  317.0 WV ROHRBOUGH                                   
+USC00467730  39.3389  -78.7711  219.5 WV ROMNEY 1 SW                                 
+USC00467743  38.7778  -80.9636  228.6 WV ROSEDALE 3 NNW                              
+USC00467785  39.3419  -79.6697  433.7 WV ROWLESBURG 1                                
+USC00467846  38.6500  -81.4667  207.3 WV RYAN                                        
+USC00467852  38.3833  -81.8339  196.9 WV SAINT ALBANS                                
+USC00467875  39.3833  -81.2000  198.1 WV ST MARYS                                    
+USC00467883  39.2833  -80.5667  320.0 WV SALEM                                       
+USC00467884  39.3000  -80.5833  342.0 WV SALEM JACOBS RUN 1                          
+USC00467885  39.3000  -80.5667  326.1 WV SALEM JACOBS RUN 2                          
+USC00467886  39.2667  -80.5500  326.1 WV SALEM PATTERSON FORK J                      
+USC00467887  39.2500  -80.5667  348.1 WV SALEM PATTERSON LEFT F                      
+USC00467888  39.2667  -80.5833  351.1 WV SALEM PATTERSON RIGHT                       
+USC00467901  38.9167  -80.4333  328.9 WV SAND FORK                                   
+USC00467918  38.9817  -81.5658  203.6 WV SANDYVILLE 9 NE                             
+USC00467920  38.9167  -81.6667  180.4 WV SANDYVILLE                                  
+USC00468051  38.3333  -79.9250  746.8 WV SENECA SF 1N                                
+USC00468083  37.7000  -81.0500  811.1 WV SHADY SPRINGS 2 ESE                         
+USC00468100  37.9167  -81.7833  271.0 WV SHARPLES                                    
+USC00468145  39.3833  -80.3000  278.0 WV SHINNSTON                                   
+USC00468172  38.7167  -79.6333 1067.1 WV SINKS OF GANDY                              
+USC00468190  38.5333  -81.6333  181.1 WV SISSONVILLE                                 
+USC00468191  38.5169  -81.6456  192.6 WV SISSONVILLE 1SW                             
+USC00468220  38.4167  -80.1167  853.1 WV SLATYFORK                                   
+USC00468274  39.2833  -80.7333  246.9 WV SMITHBURG                                   
+USC00468282  39.5333  -80.6333  259.1 WV SMITHFIELD                                  
+USC00468286  39.0728  -81.0989  231.6 WV SMITHVILLE                                  
+USC00468295  37.8833  -80.6667  747.1 WV SMOOT                                       
+USC00468308  38.3989  -79.9947 1477.4 WV SNOWSHOE                                    
+USC00468345  38.3667  -81.7000  182.3 WV S CHARLESTON LOCK 6                         
+USC00468351  38.7506  -81.9808  175.6 WV SOUTHSIDE 3 NNW                             
+USC00468384  38.8008  -81.3583  296.3 WV SPENCER                            HCN      
+USC00468409  39.4667  -78.7000  244.1 WV SPRINGFIELD 1 N                             
+USC00468432  38.7000  -79.5333 1388.1 WV SPRUCE KNOB                                 
+USC00468433  38.6833  -79.5167  929.9 WV SPRUCE KNOB                                 
+USC00468522  39.0047  -80.4742  318.5 WV STONEWALL JACKSON DAM                       
+USC00468536  39.1333  -79.3000 1036.9 WV STONY RIVER DAM                             
+USC00468538  39.1667  -79.2833  990.9 WV STONY RIVER DAM 2                           
+USC00468580  38.8333  -80.4167  360.0 WV SUGARCAMP RUN                               
+USC00468589  38.5700  -79.2758  533.4 WV SUGAR GROVE 4 NNE                           
+USC00468608  38.2833  -80.8333  588.9 WV SUMMERSVILLE                                
+USC00468614  38.2203  -80.8939  538.9 WV SUMMERSVILLE LAKE                           
+USC00468652  38.6667  -80.7000  274.9 WV SUTTON                                      
+USC00468662  38.6603  -80.6964  264.6 WV SUTTON LAKE                                 
+USC00468667  38.6500  -80.6667  412.1 WV SUTTON 3 SE                                 
+USC00468699  39.2333  -80.4167  305.1 WV SYCAMORE CREEK                              
+USC00468730  39.5167  -79.6333 -999.9 WV TANNERY                                     
+USC00468777  39.4467  -79.5469  801.6 WV TERRA ALTA #1                               
+USC00468782  39.4500  -79.5500  790.0 WV TERRA ALTA                                  
+USC00468807  39.1500  -79.5000  917.4 WV THOMAS                                      
+USC00468819  38.5500  -79.7500  899.2 WV THORNWOOD                                   
+USC00468844  37.9500  -81.0833  326.1 WV THURMOND                                    
+USC00468893  38.3614  -81.8497  335.3 WV TORNADO 2 NW                                
+USC00468905  38.5500  -79.7833  853.4 WV TRAVELER'S REPOSE                           
+USC00468924  38.7000  -81.8500  213.4 WV TRIBBLE                                     
+USC00468986  39.3133  -80.0297  376.4 WV TYGART DAM                                  
+USC00469011  37.5436  -80.5336  643.1 WV UNION 3 SSE                                 
+USC00469036  39.2667  -80.4333  328.9 WV UPPER DAVISSON RUN                          
+USC00469044  39.2333  -80.4500  326.1 WV UPPER SYCAMORE CREEK                        
+USC00469049  38.7833  -79.2833  469.4 WV UPPER TRACT                                 
+USC00469068  38.7667  -79.9167  613.0 WV VALLEY BEND                                 
+USC00469072  39.1000  -80.4000  307.8 WV VALLEY CHAPEL                               
+USC00469078  38.5250  -81.1178  312.1 WV VALLEY FORK                                 
+USC00469086  38.5453  -80.0369  739.1 WV VALLEY HEAD                                 
+USC00469104  38.9333  -80.4000  335.9 WV VANDALIA                                    
+USC00469168  39.3500  -81.5333  192.0 WV VIENNA BRISCOE                              
+USC00469275  37.3083  -81.6717  442.0 WV WAR 1 NE                                    
+USC00469281  39.1058  -78.5808  292.6 WV WARDENSVILLE R M FARM                       
+USC00469309  39.2500  -81.7000  182.9 WV WASHINGTON DAM 19                           
+USC00469321  38.2167  -82.4333  182.9 WV WAYNE                                       
+USC00469323  38.2261  -82.4431  182.9 WV WAYNE 2                                     
+USC00469333  38.4739  -80.4086  461.5 WV WEBSTER SPRINGS                             
+USC00469336  38.5358  -80.4169  563.9 WV WEBSTER SPRINGS 8 N                         
+USC00469345  40.4000  -80.6000  317.0 WV WEIRTON                                     
+USC00469355  37.4203  -81.6161  429.8 WV WELCH                                       
+USC00469368  40.2753  -80.6119  201.2 WV WELLSBURG WTR TRMT PL              HCN      
+USC00469416  37.8667  -81.9833  195.1 WV WEST LOGAN                                  
+USC00469428  39.2000  -80.4000  298.4 WV WEST MILFORD                                
+USC00469436  39.0439  -80.4725  311.8 WV WESTON                                      
+USC00469450  39.3000  -80.7833  305.1 WV WEST UNION                                  
+USC00469458  39.2906  -80.7686  245.7 WV W UNION 2                                   
+USC00469482  40.0567  -80.7283  196.6 WV WHEELING                                    
+USC00469483  40.0697  -80.7333  196.6 WV WHEELING (1)                                
+USC00469484  40.1167  -80.7000  202.7 WV WHEELING FLTR PLT                           
+USC00469492  40.1000  -80.7000  200.9 WV WHEELING WARWOOD DAM                        
+USC00469522  37.7883  -80.3083  584.9 WV WHITE SULPHUR SPRINGS                       
+USC00469527  37.9875  -81.5428  250.9 WV WHITESVILLE                                 
+USC00469554  38.4667  -80.8667  348.1 WV WIDEN                                       
+USC00469605  37.6667  -82.2833  204.2 WV WILLIAMSON                                  
+USC00469610  37.6731  -82.2761  231.6 WV WILLIAMSON                         HCN      
+USC00469613  37.6878  -82.2561  457.2 WV WILLIAMSON 2 NE                             
+USC00469683  38.5278  -81.9153  189.3 WV WINFIELD LOCKS                     HCN      
+USC00469785  38.9000  -79.6167  987.6 WV WYMER                                       
+USC00469805  38.2333  -81.9667  192.0 WV YAWKEY                                      
+USR0000VVIE  37.8325  -81.0678  917.4 WV GRANDVIEW WEST VIRGINIA                     
+USW00003733  39.0131  -79.4742 1033.3 WV ELKINS 21 ENE                      CRN 72437
+USW00003802  39.2956  -80.2289  366.7 WV CLARKSBURG BENEDUM AP                       
+USW00003804  39.3450  -81.4392  253.3 WV PARKERSBURG WOOD CO AP                 72427
+USW00003859  37.2958  -81.2078  874.8 WV BLUEFIELD MERCER CO AP                      
+USW00003860  38.3650  -82.5550  251.2 WV HUNTINGTON TRI STATE AP                72425
+USW00003872  37.7836  -81.1231  766.3 WV BECKLEY RALEIGH CO AP                  72412
+USW00013729  38.8853  -79.8528  603.2 WV ELKINS RANDOLPH CO AP                  72417
+USW00013734  39.4019  -77.9844  162.8 WV MARTINSBURG E WV RGNL AP           HCN      
+USW00013736  39.6428  -79.9164  378.0 WV MORGANTOWN HART FLD                         
+USW00013738  39.0000  -79.1167  307.8 WV PETERSBURG WB CITY                          
+USW00013866  38.3794  -81.5900  277.4 WV CHARLESTON YEAGER AP                   72414
+USW00013867  39.2811  -81.5572  189.0 WV PARKERSBURG                                 
+USW00014894  40.1764  -80.6472  359.4 WV WHEELING OHIO CO AP                         

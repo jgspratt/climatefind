@@ -14,9 +14,9 @@ def comfPMVElevatedAirspeed(ta, tr, vel, rh, met, clo, wme):
     """
     This function accepts any input conditions (including low air speeds)
     but will return accurate values if the airspeed is above (>0.15m/s).
-    
+
     http://www.ladybug.tools/ladybug/doc/comfort/pmv.m.html
-    
+
     Args:
         ta, air temperature (C)
         tr, mean radiant temperature (C)
@@ -25,7 +25,7 @@ def comfPMVElevatedAirspeed(ta, tr, vel, rh, met, clo, wme):
         met, metabolic rate (met)
         clo, clothing (clo)
         wme, external work, normally around 0 (met)
-    
+
     Returns:
         pmv : Predicted mean vote
         ppd : Percent predicted dissatisfied [%]
@@ -310,12 +310,12 @@ def comfPierceSET(ta, tr, vel, rh, met, clo, wme):
             / (1 + CSTR * COLDS))
         if SkinBloodFlow > 90.0: SkinBloodFlow = 90.0
         if SkinBloodFlow < 0.5: SkinBloodFlow = 0.5
-        
+
         try:
             REGSW = CSW * WARMB * math.exp(WARMS / 10.7)
         except OverflowError:
             REGSW = float('inf')
-        
+
         if REGSW > 500.0: REGSW = 500.0
         ERSW = 0.68 * REGSW
         REA = 1.0 / (LR * FACL * CHC)  # evaporative resistance of air layer
@@ -615,7 +615,7 @@ def comfUTCI(Ta, Tmrt, va, RH):
     if check == True:
         ehPa = es(Ta) * (RH / 100.0)
         D_Tmrt = Tmrt - Ta
-        Pa = ehPa / 10.0  # convert vapour pressure to kPa
+        Pa = ehPa / 10.0  # convert vapour pressure to kPal
 
         UTCI_approx = (Ta +
             (0.607562052) +
