@@ -9,6 +9,7 @@ import time
 import typing
 import math
 import copy
+import fnmatch
 
 # Contrib
 import yaml
@@ -77,7 +78,7 @@ US_STATES = {
   'WY': 'Wyoming',
 }
 
-MONTH_COMPLETENESS_REQ = 1.0  # 1.0 = require all days (except Feb 29)
+# MONTH_COMPLETENESS_REQ = 1.0  # 1.0 = require all days (except Feb 29)
 
 CALENDAR = {
   1: {
@@ -172,6 +173,25 @@ def get_input_queue():
   input_queue = pathlib.Path(os.path.join(GHCN_DIR, 'input', 'queue')).glob(ENV['input']['file_glob'])
   return input_queue
 
+def check_all_files(hash_start='*'):
+  queue = get_input_queue()
+  qualifying_files = 0
+  for file in queue:
+    filepath = str(file)[len(GHCN_DIR):]
+    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(os.path.basename(file)), hash_start):
+      LOG.info(f'checking {filepath}')
+      meta = read_usa_ghcn_file_meta(filepath)
+      if not meta:
+        LOG.debug(f'{filepath} is a non-US file')
+      elif meta['has_complete_temp_year']:
+        LOG.info(f'''{filepath} from {meta['state']} at {meta['lat']},{meta['lon']} {meta['elev_m']}m is complete''')
+        qualifying_files += 1
+      else:
+        LOG.debug(f'{filepath} is a US file without a complete year of temp records')
+
+  LOG.info(f'Found {qualifying_files} qualifying files')
+  return qualifying_files
+
 def read_usa_ghcn_file_meta(filepath):
   """
   :return: The following
@@ -262,6 +282,8 @@ def has_complete_year_from_csv(csv):
     year_found = date['year']
     month_found = date['month']
     day_found = date['day']
+    if month_found == 2 and day_found == 29:  # Simply ignore Feb 29
+      continue
     if not year[month_found]['day_found'][day_found]:
       year[month_found]['day_found'][day_found] = True
       # LOG.debug(f'found {month_found}/{day_found} present in {year_found}')

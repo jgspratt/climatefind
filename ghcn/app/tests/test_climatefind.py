@@ -73,3 +73,7 @@ def test_read_usa_ghcn_file_meta():
   assert climatefind.read_usa_ghcn_file_meta(samples[1]['filepath']) == samples[1]['meta']
   assert climatefind.read_usa_ghcn_file_meta(samples[3]['filepath']) == samples[3]['meta']
   assert bool(climatefind.read_usa_ghcn_file_meta(samples[4]['filepath'])) == samples[4]['is_usa_location']
+
+def test_check_all_files():
+  print()
+  assert climatefind.check_all_files(hash_start='11*')
