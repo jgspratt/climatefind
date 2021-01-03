@@ -1,6 +1,6 @@
 # climatefind ghcn input
 input/queue/*
-spool/tmp/*
+spool/*
 *.tar.gz
 archive/tmp/*
 ghcnd_all/

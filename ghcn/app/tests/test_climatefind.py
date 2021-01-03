@@ -1,7 +1,26 @@
+#!/usr/bin/env python3
+
+# Core
+import json
+import pprint
+import subprocess
+import os
+
+# Contrib
+import yaml
+import folium
+
+# Custom
 import climatefind
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+THIS_PARENT_DIR = os.path.dirname(THIS_DIR)
+GHCN_DIR = os.path.dirname(THIS_PARENT_DIR)
+
 
 climatefind.read_env()
 climatefind.setup_logger()
+climatefind.setup_spool()
 
 samples = {
   1: {
@@ -52,7 +71,23 @@ samples = {
     'filepath': 'app/tests/input/queue/ZI000067991.csv',
     'is_usa_location': False,
     'is_temperature_file': True,
-  }
+  },
+  5: {
+    'filename': 'USW00014758.csv',
+    'filepath': 'app/tests/input/queue/USW00014758.csv',
+    'meta': {
+      'id': 'USW00014758',
+      'start_date': '1948-01-01',
+      'end_date': '2020-12-27',
+      'name': 'NEW HAVEN TWEED AIRPORT, CT US',
+      'lat': 41.26389,
+      'lon': -72.88722,
+      'elev_m': 0.9,
+      'state': 'CT',
+      'has_temps': True,
+      'has_complete_temp_year': True,
+    }
+  },
 }
 
 def test_version():
@@ -72,8 +107,58 @@ def test_read_usa_ghcn_file_meta():
   print()
   assert climatefind.read_usa_ghcn_file_meta(samples[1]['filepath']) == samples[1]['meta']
   assert climatefind.read_usa_ghcn_file_meta(samples[3]['filepath']) == samples[3]['meta']
+  assert climatefind.read_usa_ghcn_file_meta(samples[5]['filepath']) == samples[5]['meta']
   assert bool(climatefind.read_usa_ghcn_file_meta(samples[4]['filepath'])) == samples[4]['is_usa_location']
 
-def test_check_all_files():
-  print()
-  assert climatefind.check_all_files(hash_start='11*')
+# def test_check_all_files():
+#   print()
+#   assert climatefind.check_all_files(hash_start='00*', write_meta=True)
+
+# def test_num_comfy_days_per_year_from_csv():
+#   csv = climatefind.csv_from_temp_ghcn_file(samples[5]['filepath'])
+#   year = climatefind.num_comfy_days_per_year_from_csv(csv)
+#   print()
+#   pprint.pprint(year, compact=True, width=80, indent=1, depth=2)
+
+# def test_spool_tmins():
+#   climatefind.spool_tmins(hash_start='00*')
+
+def test_all():
+  procs = []
+  for i in ['000*', '001*']:
+    procs.append(
+      subprocess.Popen(
+        [
+          'poetry',
+          'run',
+          'python3',
+          f'{GHCN_DIR}/app/climatefind/main.py',
+          '--hash-start',
+          i
+        ]
+      )
+    )
+
+  for i in procs:
+    i.communicate()
+
+# def test_folium():
+#   m = folium.Map(
+#     location=[42.0573, -102.8017],
+#     tiles='Stamen Terrain',
+#     zoom_start=4
+#   )
+#   folium.Marker(
+#     location=[40.9698895,-74.3118416],
+#     popup='Pompton Plains',
+#     icon=folium.Icon(
+#       color='green',
+#       icon_color='#FF0000',
+#       icon='info-sign'
+#     )
+#   ).add_to(m)
+#
+#
+#   test_html_filepath = f'{climatefind.GHCN_DIR}/output/test.html'
+#   m.save(test_html_filepath)
+#   subprocess.Popen(['open', '-a', 'Google Chrome', test_html_filepath])

@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 # Core
+import argparse
 import json
 import logging
 import os
@@ -10,6 +13,9 @@ import typing
 import math
 import copy
 import fnmatch
+import statistics
+import pprint
+
 
 # Contrib
 import yaml
@@ -133,6 +139,8 @@ CALENDAR = {
 for month, meta in CALENDAR.items():
   CALENDAR[month]['days'] = [ i for i in range(1, (CALENDAR[month]['num_days'] + 1)) ]
 
+
+
 def read_env(override=None) -> bool:
   """Read the global env from disk"""
   global ENV
@@ -169,28 +177,141 @@ def setup_logger() -> None:
   LOG.addHandler(console_handler)
   LOG.info(f'''Logging enabled at {ENV['log']['level']} ({log_level}) level.''')
 
+def setup_spool():
+  dirs = [
+    f'{GHCN_DIR}/spool',
+    f'{GHCN_DIR}/spool/meta',
+    f'{GHCN_DIR}/spool/year',
+  ]
+  for dir in dirs:
+    if not os.path.isdir(dir):
+      os.mkdir(dir)
+
 def get_input_queue():
   input_queue = pathlib.Path(os.path.join(GHCN_DIR, 'input', 'queue')).glob(ENV['input']['file_glob'])
   return input_queue
 
-def check_all_files(hash_start='*'):
+def check_all_files(hash_start='*', write_meta=False):
   queue = get_input_queue()
-  qualifying_files = 0
+  num_qualifying_files = 0
+  num_files_checked = 0
   for file in queue:
     filepath = str(file)[len(GHCN_DIR):]
-    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(os.path.basename(file)), hash_start):
-      LOG.info(f'checking {filepath}')
+    filename = os.path.basename(file)
+    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
+      LOG.debug(f'checking {filepath}')
       meta = read_usa_ghcn_file_meta(filepath)
+      num_files_checked += 1
       if not meta:
         LOG.debug(f'{filepath} is a non-US file')
       elif meta['has_complete_temp_year']:
-        LOG.info(f'''{filepath} from {meta['state']} at {meta['lat']},{meta['lon']} {meta['elev_m']}m is complete''')
-        qualifying_files += 1
+        LOG.info(f'''{filepath} from {meta['state']} at {meta['lat']},{meta['lon']} {meta['elev_m']}m is complete ({num_qualifying_files}/{num_files_checked} = {int((num_qualifying_files*100/num_files_checked))}%)''')
+        if write_meta:
+          with open(f'{GHCN_DIR}/spool/meta/{filename}', 'w') as f:
+            f.write(json.dumps(meta, indent=2))
+        num_qualifying_files += 1
       else:
         LOG.debug(f'{filepath} is a US file without a complete year of temp records')
 
-  LOG.info(f'Found {qualifying_files} qualifying files')
-  return qualifying_files
+  LOG.info(f'Found {num_qualifying_files} qualifying files')
+  return num_qualifying_files
+
+def spool_tmins(hash_start='*'):
+  queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob'])
+  for file in queue:
+    filename = os.path.basename((file.resolve()))
+    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
+      tmins = {
+        'months': {},
+        'meta': read_usa_ghcn_file_meta(f'input/queue/{filename}'),
+      }
+      csv = csv_from_temp_ghcn_file(f'input/queue/{filename}')
+      year = num_comfy_days_per_year_from_csv(csv)
+      for month in range(1,13):
+        tmins['months'][month] = {}
+        for day in year[month]['days']:
+          tmins['months'][month][day] = year[month]['comfy_days'][day]['tmin_mean']
+      with open(f'{GHCN_DIR}/spool/tmin/{filename}', 'w') as f:
+        f.write(json.dumps(tmins, indent=2))
+
+def num_comfy_days_per_year_from_csv(csv):
+  year = copy.deepcopy(CALENDAR)
+  for month, meta in year.items():
+    year[month]['comfy_days'] = {}
+    for day in year[month]['days']:
+      year[month]['comfy_days'][day] = {
+        'comfy': 0,
+        'uncomfy': 0,
+        'tmax': [],
+        'tmin': [],
+      }
+
+  for index, row in csv.iterrows():
+    date = get_date_dict(row['DATE'])
+    year_found = date['year']
+    month_found = date['month']
+    day_found = date['day']
+    if month_found == 2 and day_found == 29:  # Simply ignore Feb 29
+      continue
+    tmax_found = row['TMAX']
+    tmin_found = row['TMIN']
+    try:
+      normalized_tmax = normalize_temperature(int(tmax_found))
+      normalized_tmin = normalize_temperature(int(tmin_found))
+      year[month_found]['comfy_days'][day_found]['tmax'].append(normalized_tmax)
+      year[month_found]['comfy_days'][day_found]['tmin'].append(normalized_tmin)
+      if is_comfy_day(
+        tmax=normalize_temperature(tmax_found),
+        tmin=normalize_temperature(tmin_found)
+      ):
+        year[month_found]['comfy_days'][day_found]['comfy'] += 1
+      else:
+        year[month_found]['comfy_days'][day_found]['uncomfy'] += 1
+    except ValueError:
+      continue
+
+  for month, meta in year.items():
+    for day in year[month]['days']:
+      year[month]['comfy_days'][day]['tmax_mean'] = statistics.mean(year[month]['comfy_days'][day]['tmax'])
+      year[month]['comfy_days'][day]['tmin_mean'] = statistics.mean(year[month]['comfy_days'][day]['tmin'])
+
+  year = summarize_year(year)
+
+  return year
+
+def summarize_year(year):
+  for month, meta in year.items():
+    year[month]['total_comfy_days'] = summarize_month(year[month])
+
+  year['total_comfy_days'] = 0
+  for month in range (1, 13):
+    # print('\n'*3)
+    # print(f'month: {month}')
+    # pprint.pprint(year[month], compact=True)
+    year['total_comfy_days'] += year[month]['total_comfy_days']
+
+  return year
+
+def summarize_month(month):
+  num_comfy_days = 0
+  for day, val in month['comfy_days'].items():
+    if is_comfy_day_on_average(val):
+      num_comfy_days += 1
+  return num_comfy_days
+
+def is_comfy_day_on_average(day):
+ return day['comfy'] >= day['uncomfy']
+
+def is_comfy_day(tmax, tmin):
+  return (
+    (
+      ENV['comfy']['tmax_solo']['min'] <= tmax <= ENV['comfy']['tmax_solo']['max']
+    ) or (
+      tmax > ENV['comfy']['tmax_solo']['max']
+      and
+      tmin <= ENV['comfy']['tmin_if_tmax_above_max']
+    )
+  )
 
 def read_usa_ghcn_file_meta(filepath):
   """
@@ -240,7 +361,7 @@ def read_usa_ghcn_file_meta(filepath):
   meta['has_temps'] = is_temperature_file(filepath)
   if meta['has_temps']:
     meta['has_complete_temp_year'] = has_complete_year_from_csv(
-      cvs_from_temp_ghcn_file(filepath)
+      csv_from_temp_ghcn_file(filepath)
     )
   else:
     meta['has_complete_temp_year'] = False
@@ -285,9 +406,13 @@ def has_complete_year_from_csv(csv):
     if month_found == 2 and day_found == 29:  # Simply ignore Feb 29
       continue
     if not year[month_found]['day_found'][day_found]:
-      year[month_found]['day_found'][day_found] = True
-      # LOG.debug(f'found {month_found}/{day_found} present in {year_found}')
-      num_found_days += 1
+      try:
+        if int(row['TMAX']) and int(row['TMIN']):
+          year[month_found]['day_found'][day_found] = True
+          LOG.debug(f'found {month_found}/{day_found} present in {year_found}')
+          num_found_days += 1
+      except ValueError:
+        continue
     if num_found_days >= 365:
       LOG.info(f'Found 365 days after searching {records_checked} records')
       return True
@@ -302,7 +427,7 @@ def get_date_dict(date_string):
     'day': int(date_string[8:10]),
   }
 
-def cvs_from_temp_ghcn_file(filepath):
+def csv_from_temp_ghcn_file(filepath):
   return pandas.read_csv(
     f'{GHCN_DIR}/{filepath}',
     usecols=[
@@ -354,3 +479,19 @@ def is_temperature_file(filepath):
 
 def is_usa_location_from_csv(csv):
   return bool(get_state_from_csv())
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--hash-start', dest='hash_start', default='*', required=False)
+  args = parser.parse_args()
+
+  read_env()
+  setup_logger()
+  setup_spool()
+
+  check_all_files(hash_start=args.hash_start, write_meta=True)
+  spool_tmins(hash_start=args.hash_start)
+
+if __name__ == "__main__":
+    main()
