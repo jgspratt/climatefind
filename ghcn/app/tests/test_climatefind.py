@@ -88,6 +88,13 @@ samples = {
       'has_complete_temp_year': True,
     }
   },
+  6: {
+    'filename': 'USC00449215.csv',
+    'filepath': 'input/queue/USC00449215.csv',
+    'meta': {
+      'id': 'USC00449215',
+    }
+  },
 }
 
 def test_version():
@@ -114,33 +121,33 @@ def test_read_usa_ghcn_file_meta():
 #   print()
 #   assert climatefind.check_all_files(hash_start='00*', write_meta=True)
 
-# def test_num_comfy_days_per_year_from_csv():
-#   csv = climatefind.csv_from_temp_ghcn_file(samples[5]['filepath'])
-#   year = climatefind.num_comfy_days_per_year_from_csv(csv)
-#   print()
-#   pprint.pprint(year, compact=True, width=80, indent=1, depth=2)
+def test_num_comfy_days_per_year_from_csv():
+  csv = climatefind.csv_from_temp_ghcn_file(samples[6]['filepath'])
+  year = climatefind.num_comfy_days_per_year_from_csv(csv)
+  print()
+  pprint.pprint(year, compact=True, width=80, indent=1, depth=5)
 
 # def test_spool_tmins():
 #   climatefind.spool_tmins(hash_start='00*')
 
-def test_all():
-  procs = []
-  for i in ['000*', '001*']:
-    procs.append(
-      subprocess.Popen(
-        [
-          'poetry',
-          'run',
-          'python3',
-          f'{GHCN_DIR}/app/climatefind/main.py',
-          '--hash-start',
-          i
-        ]
-      )
-    )
-
-  for i in procs:
-    i.communicate()
+# def test_all():
+#   procs = []
+#   for i in ['000*', '001*']:
+#     procs.append(
+#       subprocess.Popen(
+#         [
+#           'poetry',
+#           'run',
+#           'python3',
+#           f'{GHCN_DIR}/app/climatefind/main.py',
+#           '--hash-start',
+#           i
+#         ]
+#       )
+#     )
+#
+#   for i in procs:
+#     i.communicate()
 
 # def test_folium():
 #   m = folium.Map(

@@ -181,6 +181,8 @@ def setup_spool():
   dirs = [
     f'{GHCN_DIR}/spool',
     f'{GHCN_DIR}/spool/meta',
+    f'{GHCN_DIR}/spool/tmin',
+    f'{GHCN_DIR}/spool/tmax',
     f'{GHCN_DIR}/spool/year',
   ]
   for dir in dirs:
@@ -233,6 +235,24 @@ def spool_tmins(hash_start='*'):
           tmins['months'][month][day] = year[month]['comfy_days'][day]['tmin_mean']
       with open(f'{GHCN_DIR}/spool/tmin/{filename}', 'w') as f:
         f.write(json.dumps(tmins, indent=2))
+
+def spool_tmaxs(hash_start='*'):
+  queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob'])
+  for file in queue:
+    filename = os.path.basename((file.resolve()))
+    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
+      tmaxs = {
+        'months': {},
+        'meta': read_usa_ghcn_file_meta(f'input/queue/{filename}'),
+      }
+      csv = csv_from_temp_ghcn_file(f'input/queue/{filename}')
+      year = num_comfy_days_per_year_from_csv(csv)
+      for month in range(1,13):
+        tmaxs['months'][month] = {}
+        for day in year[month]['days']:
+          tmaxs['months'][month][day] = year[month]['comfy_days'][day]['tmax_mean']
+      with open(f'{GHCN_DIR}/spool/tmax/{filename}', 'w') as f:
+        f.write(json.dumps(tmaxs, indent=2))
 
 def num_comfy_days_per_year_from_csv(csv):
   year = copy.deepcopy(CALENDAR)
@@ -492,6 +512,7 @@ def main():
 
   check_all_files(hash_start=args.hash_start, write_meta=True)
   spool_tmins(hash_start=args.hash_start)
+  spool_tmaxs(hash_start=args.hash_start)
 
 if __name__ == "__main__":
     main()
