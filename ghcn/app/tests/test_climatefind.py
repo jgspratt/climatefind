@@ -127,27 +127,27 @@ def test_num_comfy_days_per_year_from_csv():
   print()
   pprint.pprint(year, compact=True, width=80, indent=1, depth=5)
 
-# def test_spool_tmins():
-#   climatefind.spool_tmins(hash_start='00*')
+# def test_spool_tmax_tmin():
+#   climatefind.spool_tmax_tmin(hash_start='00*')
 
-# def test_all():
-#   procs = []
-#   for i in ['000*', '001*']:
-#     procs.append(
-#       subprocess.Popen(
-#         [
-#           'poetry',
-#           'run',
-#           'python3',
-#           f'{GHCN_DIR}/app/climatefind/main.py',
-#           '--hash-start',
-#           i
-#         ]
-#       )
-#     )
-#
-#   for i in procs:
-#     i.communicate()
+def test_main():
+  procs = []
+  for i in ['000*', '001*']:
+    procs.append(
+      subprocess.Popen(
+        [
+          'poetry',
+          'run',
+          'python3',
+          f'{GHCN_DIR}/app/climatefind/main.py',
+          '--hash-start',
+          i
+        ]
+      )
+    )
+
+  for i in procs:
+    i.communicate()
 
 # def test_folium():
 #   m = folium.Map(

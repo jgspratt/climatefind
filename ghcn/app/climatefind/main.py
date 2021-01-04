@@ -218,41 +218,32 @@ def check_all_files(hash_start='*', write_meta=False):
   LOG.info(f'Found {num_qualifying_files} qualifying files')
   return num_qualifying_files
 
-def spool_tmins(hash_start='*'):
+def spool_tmax_tmin(hash_start='*'):
   queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob'])
   for file in queue:
     filename = os.path.basename((file.resolve()))
     if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
-      tmins = {
-        'months': {},
-        'meta': read_usa_ghcn_file_meta(f'input/queue/{filename}'),
-      }
-      csv = csv_from_temp_ghcn_file(f'input/queue/{filename}')
-      year = num_comfy_days_per_year_from_csv(csv)
-      for month in range(1,13):
-        tmins['months'][month] = {}
-        for day in year[month]['days']:
-          tmins['months'][month][day] = year[month]['comfy_days'][day]['tmin_mean']
-      with open(f'{GHCN_DIR}/spool/tmin/{filename}', 'w') as f:
-        f.write(json.dumps(tmins, indent=2))
-
-def spool_tmaxs(hash_start='*'):
-  queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob'])
-  for file in queue:
-    filename = os.path.basename((file.resolve()))
-    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
+      meta = read_usa_ghcn_file_meta(f'input/queue/{filename}')
       tmaxs = {
         'months': {},
-        'meta': read_usa_ghcn_file_meta(f'input/queue/{filename}'),
+        'meta': meta,
+      }
+      tmins = {
+        'months': {},
+        'meta': meta,
       }
       csv = csv_from_temp_ghcn_file(f'input/queue/{filename}')
       year = num_comfy_days_per_year_from_csv(csv)
       for month in range(1,13):
         tmaxs['months'][month] = {}
+        tmins['months'][month] = {}
         for day in year[month]['days']:
           tmaxs['months'][month][day] = year[month]['comfy_days'][day]['tmax_mean']
+          tmins['months'][month][day] = year[month]['comfy_days'][day]['tmin_mean']
       with open(f'{GHCN_DIR}/spool/tmax/{filename}', 'w') as f:
         f.write(json.dumps(tmaxs, indent=2))
+      with open(f'{GHCN_DIR}/spool/tmin/{filename}', 'w') as f:
+        f.write(json.dumps(tmins, indent=2))
 
 def num_comfy_days_per_year_from_csv(csv):
   year = copy.deepcopy(CALENDAR)
@@ -511,8 +502,7 @@ def main():
   setup_spool()
 
   check_all_files(hash_start=args.hash_start, write_meta=True)
-  spool_tmins(hash_start=args.hash_start)
-  spool_tmaxs(hash_start=args.hash_start)
+  spool_tmax_tmin(hash_start=args.hash_start)
 
 if __name__ == "__main__":
     main()
