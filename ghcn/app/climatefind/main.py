@@ -15,6 +15,7 @@ import copy
 import fnmatch
 import statistics
 import pprint
+import timeit
 
 
 # Contrib
@@ -199,12 +200,14 @@ def get_spool(empty=False):
       'meta': set(),
       'tmax': set(),
       'tmin': set(),
+      'year': set(),
     }
 
   return {
     'meta': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob']) ]),
     'tmax': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'tmax')).glob(ENV['input']['file_glob']) ]),
     'tmin': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'tmin')).glob(ENV['input']['file_glob']) ]),
+    'year': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'year')).glob(ENV['input']['file_glob']) ]),
   }
 
 def check_all_files(hash_start='*', overwrite=False, write_meta=False, spool=None):
@@ -257,8 +260,11 @@ def spool_tmax_tmin(hash_start='*', overwrite=False, spool=None):
         filename not in spool['tmax']
         or
         filename not in spool['tmin']
+        or
+        filename not in spool['year']
       )
     ):
+      start_time = timeit.default_timer()
       meta = read_usa_ghcn_file_meta(f'input/queue/{filename}')
       tmaxs = {
         'months': {},
@@ -270,6 +276,7 @@ def spool_tmax_tmin(hash_start='*', overwrite=False, spool=None):
       }
       csv = csv_from_temp_ghcn_file(f'input/queue/{filename}')
       year = num_comfy_days_per_year_from_csv(csv)
+      year['meta'] = meta
       for month in range(1,13):
         tmaxs['months'][month] = {}
         tmins['months'][month] = {}
@@ -277,16 +284,19 @@ def spool_tmax_tmin(hash_start='*', overwrite=False, spool=None):
           tmaxs['months'][month][day] = year[month]['comfy_days'][day]['tmax_mean']
           tmins['months'][month][day] = year[month]['comfy_days'][day]['tmin_mean']
       with open(f'{GHCN_DIR}/spool/tmax/{filename}', 'w') as f:
-        f.write(json.dumps(tmaxs, indent=2))
+        f.write(climatefind.utils.compact_json_dumps(tmaxs, width=80, indent=2))
       with open(f'{GHCN_DIR}/spool/tmin/{filename}', 'w') as f:
-        f.write(json.dumps(tmins, indent=2))
+        f.write(climatefind.utils.compact_json_dumps(tmins, width=80, indent=2))
+      with open(f'{GHCN_DIR}/spool/year/{filename}', 'w') as f:
+        f.write(climatefind.utils.compact_json_dumps(year, width=80, indent=2))
+      LOG.info(f'Wrote tmin and tmax for {filename} in {round((timeit.default_timer() - start_time), 1)}s')
 
 def num_comfy_days_per_year_from_csv(csv):
   year = copy.deepcopy(CALENDAR)
-  for month, meta in year.items():
-    year[month]['comfy_days'] = {}
-    for day in year[month]['days']:
-      year[month]['comfy_days'][day] = {
+  for month_num, month in year.items():
+    year[month_num]['comfy_days'] = {}
+    for day in year[month_num]['days']:
+      year[month_num]['comfy_days'][day] = {
         'comfy': 0,
         'uncomfy': 0,
         'tmax': [],
@@ -319,35 +329,42 @@ def num_comfy_days_per_year_from_csv(csv):
 
   for month, meta in year.items():
     for day in year[month]['days']:
-      year[month]['comfy_days'][day]['tmax_mean'] = statistics.mean(year[month]['comfy_days'][day]['tmax'])
-      year[month]['comfy_days'][day]['tmin_mean'] = statistics.mean(year[month]['comfy_days'][day]['tmin'])
+      year[month]['comfy_days'][day]['tmax_mean'] = round(statistics.mean(year[month]['comfy_days'][day]['tmax']), 2)
+      year[month]['comfy_days'][day]['tmin_mean'] = round(statistics.mean(year[month]['comfy_days'][day]['tmin']), 2)
 
   year = summarize_year(year)
 
   return year
 
 def summarize_year(year):
-  for month, meta in year.items():
-    year[month]['total_comfy_days'] = summarize_month(year[month])
+  for month_num, month in year.items():
+    month_summary = summarize_month(year[month_num])
+    year[month_num]['total_comfy_days'] = month_summary['total_comfy_days']
+    year[month_num]['average_comfy_days'] = month_summary['average_comfy_days']
 
   year['total_comfy_days'] = 0
-  for month in range (1, 13):
+  year['average_comfy_days'] = 0
+  for month_num in range (1, 13):
     # print('\n'*3)
     # print(f'month: {month}')
     # pprint.pprint(year[month], compact=True)
-    year['total_comfy_days'] += year[month]['total_comfy_days']
+    year['total_comfy_days'] += year[month_num]['total_comfy_days']
+    year['average_comfy_days'] += year[month_num]['average_comfy_days']
 
+  year['average_comfy_days'] = round(year['average_comfy_days'], 2)
   return year
 
 def summarize_month(month):
-  num_comfy_days = 0
-  for day, val in month['comfy_days'].items():
-    if is_comfy_day_on_average(val):
-      num_comfy_days += 1
-  return num_comfy_days
-
-def is_comfy_day_on_average(day):
- return day['comfy'] >= day['uncomfy']
+  total_comfy_days = 0
+  average_comfy_days = 0
+  for day_num, day in month['comfy_days'].items():
+    if day['comfy'] >= day['uncomfy']:
+      total_comfy_days += 1
+    average_comfy_days += (day['comfy'] / ( day['comfy'] + day['uncomfy'] ))
+  return {
+    'total_comfy_days': total_comfy_days,
+    'average_comfy_days': round(average_comfy_days, 2),
+  }
 
 def is_comfy_day(tmax, tmin):
   return (
@@ -444,6 +461,8 @@ def has_complete_year_from_csv(csv):
 
   num_found_days = 0
   records_checked = 0
+  station = csv.iloc[0]['STATION']
+
   for index, row in csv.iterrows():
     records_checked += 1
     date = get_date_dict(row['DATE'])
@@ -461,7 +480,7 @@ def has_complete_year_from_csv(csv):
       except ValueError:
         continue
     if num_found_days >= 365:
-      LOG.info(f'Found 365 days after searching {records_checked} records')
+      LOG.info(f'Found 365 days in {station} after searching {records_checked} records')
       return True
 
   LOG.info(f'Found only {num_found_days} days')
