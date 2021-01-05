@@ -193,14 +193,37 @@ def get_input_queue():
   input_queue = pathlib.Path(os.path.join(GHCN_DIR, 'input', 'queue')).glob(ENV['input']['file_glob'])
   return input_queue
 
-def check_all_files(hash_start='*', write_meta=False):
+def get_spool(empty=False):
+  if empty:
+    return {
+      'meta': set(),
+      'tmax': set(),
+      'tmin': set(),
+    }
+
+  return {
+    'meta': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob']) ]),
+    'tmax': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'tmax')).glob(ENV['input']['file_glob']) ]),
+    'tmin': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'tmin')).glob(ENV['input']['file_glob']) ]),
+  }
+
+def check_all_files(hash_start='*', overwrite=False, write_meta=False, spool=None):
   queue = get_input_queue()
+  if overwrite:
+    spool = get_spool(empty=True)
+  else:
+    if not spool:
+      spool = get_spool()
   num_qualifying_files = 0
   num_files_checked = 0
   for file in queue:
     filepath = str(file)[len(GHCN_DIR):]
     filename = os.path.basename(file)
-    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
+    if (
+      fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start)
+      and
+      filename not in spool['meta']
+    ):
       LOG.debug(f'checking {filepath}')
       meta = read_usa_ghcn_file_meta(filepath)
       num_files_checked += 1
@@ -218,11 +241,24 @@ def check_all_files(hash_start='*', write_meta=False):
   LOG.info(f'Found {num_qualifying_files} qualifying files')
   return num_qualifying_files
 
-def spool_tmax_tmin(hash_start='*'):
+def spool_tmax_tmin(hash_start='*', overwrite=False, spool=None):
   queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob'])
+  if overwrite:
+    spool = get_spool(empty=True)
+  else:
+    if not spool:
+      spool = get_spool()
   for file in queue:
     filename = os.path.basename((file.resolve()))
-    if fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start):
+    if (
+      fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start)
+      and
+      (
+        filename not in spool['tmax']
+        or
+        filename not in spool['tmin']
+      )
+    ):
       meta = read_usa_ghcn_file_meta(f'input/queue/{filename}')
       tmaxs = {
         'months': {},
@@ -495,14 +531,18 @@ def is_usa_location_from_csv(csv):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--hash-start', dest='hash_start', default='*', required=False)
+  parser.add_argument('--overwrite', dest='overwrite', action='store_true')
+  parser.add_argument('--no-overwrite', dest='overwrite', action='store_false')
+  parser.set_defaults(overwrite=False)
   args = parser.parse_args()
 
   read_env()
   setup_logger()
   setup_spool()
 
-  check_all_files(hash_start=args.hash_start, write_meta=True)
-  spool_tmax_tmin(hash_start=args.hash_start)
+  spool = get_spool()
+  check_all_files(hash_start=args.hash_start, overwrite=args.overwrite, write_meta=True, spool=spool)
+  spool_tmax_tmin(hash_start=args.hash_start, overwrite=args.overwrite, spool=spool)
 
 if __name__ == "__main__":
     main()

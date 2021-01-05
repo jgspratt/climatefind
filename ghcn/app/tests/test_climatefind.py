@@ -5,6 +5,7 @@ import json
 import pprint
 import subprocess
 import os
+import time
 
 # Contrib
 import yaml
@@ -132,22 +133,28 @@ def test_num_comfy_days_per_year_from_csv():
 
 def test_main():
   procs = []
-  for i in ['000*', '001*']:
-    procs.append(
-      subprocess.Popen(
-        [
-          'poetry',
-          'run',
-          'python3',
-          f'{GHCN_DIR}/app/climatefind/main.py',
-          '--hash-start',
-          i
-        ]
-      )
-    )
+  # for i in range(0,16):
+  for i in range(0,16):
+    for j in range (0,16):
+      print()
+      for k in range (0,16):
+        hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}{str(hex(k))[2:]}*'''
+        print(hash_start)
+        procs.append(
+          subprocess.Popen(
+            [
+              'poetry',
+              'run',
+              'python3',
+              f'{GHCN_DIR}/app/climatefind/main.py',
+              '--hash-start',
+              hash_start
+            ]
+          )
+        )
 
-  for i in procs:
-    i.communicate()
+      for proc in procs:
+        proc.communicate()
 
 # def test_folium():
 #   m = folium.Map(
