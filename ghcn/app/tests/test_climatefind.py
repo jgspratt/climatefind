@@ -159,7 +159,7 @@ def test_main_fast():
   # for i in range(0,16):
   for i in range(0,16):
     print()
-    for k in range (0,16):
+    for j in range (0,16):
       hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}*'''
       print(hash_start)
       procs.append(
