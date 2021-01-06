@@ -559,6 +559,8 @@ def main():
   setup_logger()
   setup_spool()
 
+  time.sleep(1)
+
   spool = get_spool()
   check_all_files(hash_start=args.hash_start, overwrite=args.overwrite, write_meta=True, spool=spool)
   spool_tmax_tmin(hash_start=args.hash_start, overwrite=args.overwrite, spool=spool)

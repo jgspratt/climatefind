@@ -154,31 +154,56 @@ def test_num_comfy_days_per_year_from_csv():
 # def test_spool_tmax_tmin():
 #   climatefind.spool_tmax_tmin(hash_start='00*')
 
-def test_main():
+def test_main_fast():
   procs = []
   # for i in range(0,16):
   for i in range(0,16):
-    for j in range (0,16):
-      print()
-      for k in range (0,16):
-        hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}{str(hex(k))[2:]}*'''
-        print(hash_start)
-        procs.append(
-          subprocess.Popen(
-            [
-              'poetry',
-              'run',
-              'python3',
-              f'{GHCN_DIR}/app/climatefind/main.py',
-              '--hash-start',
-              hash_start,
-              '--overwrite'
-            ]
-          )
+    print()
+    for k in range (0,16):
+      hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}*'''
+      print(hash_start)
+      procs.append(
+        subprocess.Popen(
+          [
+            'poetry',
+            'run',
+            'python3',
+            f'{GHCN_DIR}/app/climatefind/main.py',
+            '--hash-start',
+            hash_start,
+            '--overwrite'
+          ]
         )
+      )
 
-      for proc in procs:
-        proc.communicate()
+    for proc in procs:
+      proc.communicate()
+
+# def test_main():
+#   procs = []
+#   # for i in range(0,16):
+#   for i in range(0,16):
+#     for j in range (0,16):
+#       print()
+#       for k in range (0,16):
+#         hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}{str(hex(k))[2:]}*'''
+#         print(hash_start)
+#         procs.append(
+#           subprocess.Popen(
+#             [
+#               'poetry',
+#               'run',
+#               'python3',
+#               f'{GHCN_DIR}/app/climatefind/main.py',
+#               '--hash-start',
+#               hash_start,
+#               '--overwrite'
+#             ]
+#           )
+#         )
+#
+#       for proc in procs:
+#         proc.communicate()
 
 # def test_folium():
 #   m = folium.Map(
