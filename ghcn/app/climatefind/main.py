@@ -688,6 +688,12 @@ def is_temperature_file(filepath):
 def is_usa_location_from_csv(csv):
   return bool(get_state_from_csv())
 
+def scale_onto_array(vmin, vmax, val, arr):
+  arr_len = len(arr)
+  this_range = vmax - vmin
+  step = (this_range/arr_len)
+  val_steps = min(round(val/step), (arr_len-1))
+  return arr[val_steps]
 
 def get_elevation_df_from_summary_csv(elevation_column='elev_m', no_negatives=True):
   """
@@ -699,6 +705,8 @@ def get_elevation_df_from_summary_csv(elevation_column='elev_m', no_negatives=Tr
       'lat',
       'lon',
       elevation_column,
+      'name',
+      'id',
     ],
   )
   df.rename(columns={elevation_column: 'elev'}, inplace=True)
@@ -708,7 +716,7 @@ def get_elevation_df_from_summary_csv(elevation_column='elev_m', no_negatives=Tr
   else:
     return df
 
-def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_green'):
+def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_green', units='m'):
   df = get_elevation_df_from_summary_csv(elevation_column)
   colors = MAP_COLORS[color_scheme]
   num_colors = len(colors)
@@ -758,7 +766,7 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
     y_mesh,
     z_mesh,
     num_colors,
-    alpha=0.75,
+    alpha=0.5,
     colors=colors,
     linestyles='None',
     vmin=elevation_min,
@@ -771,7 +779,7 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
     min_angle_deg=3.0,
     ndigits=5,
     stroke_width=2,
-    fill_opacity=0.6
+    fill_opacity=0.1
   )
 
   # Set up the map placeholdder
@@ -788,12 +796,38 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
       'color':     x['properties']['stroke'],
       'weight':    x['properties']['stroke-width'],
       'fillColor': x['properties']['fill'],
-      'opacity':   0.5,
+      'opacity':   0.9,
+      'fillOpacity': 0.5,
     }).add_to(geomap1)
 
   # Add the colormap to the folium map for legend
   color_map.caption = 'Elevation'
   geomap1.add_child(color_map)
+
+  # Add all stations to map
+  for lat, lon, elev, name, id in zip(
+    df['lat'],
+    df['lon'],
+    df['elev'],
+    df['name'],
+    df['id'],
+  ):
+    this_color = scale_onto_array(
+      vmin=elevation_min,
+      vmax=elevation_max,
+      val=elev,
+      arr=colors
+    )
+    folium.CircleMarker(
+      [lat, lon],
+      radius=4, # pixels
+      tooltip=f'{id} {name} {lat},{lon} @ {elev} {units}',
+      popup=f'{id} {name} {lat},{lon} @ {elev} {units}',
+      color=this_color,
+      fill=True,
+      fillColor=this_color,
+      fillOpacity=1.0
+    ).add_to(geomap1)
 
   # Add the legend to the map
   folium.plugins.Fullscreen(

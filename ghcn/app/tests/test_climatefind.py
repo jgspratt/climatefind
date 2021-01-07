@@ -115,7 +115,7 @@ def test_compact_json_dumps():
   }
   ret = climatefind.utils.compact_json_dumps(dict_for_compact_printing, indent=2, width=80)
   assert ret
-  print(ret)
+  # print(ret)
 
 def test_get_input_queue():
   assert climatefind.get_input_queue()
@@ -142,13 +142,13 @@ def test_num_comfy_days_per_year_from_csv():
   csv = climatefind.csv_from_temp_ghcn_file(samples[6]['filepath'])
   year = climatefind.num_comfy_days_per_year_from_csv(csv)
   print()
-  pprint.pprint(year, compact=True, width=80, indent=1, depth=2)
+  # pprint.pprint(year, compact=True, width=80, indent=1, depth=2)
   # print(climatefind.utils.compact_json_dumps(year, width=80, indent=2))
 
   csv = climatefind.csv_from_temp_ghcn_file(samples[5]['filepath'])
   year = climatefind.num_comfy_days_per_year_from_csv(csv)
   print()
-  pprint.pprint(year, compact=True, width=80, indent=1, depth=2)
+  # pprint.pprint(year, compact=True, width=80, indent=1, depth=2)
   # print(climatefind.utils.compact_json_dumps(year, width=80, indent=2))
 
 # def test_spool_tmax_tmin():
@@ -161,9 +161,31 @@ def test_get_elevation_df_from_summary_csv():
   assert not climatefind.get_elevation_df_from_summary_csv().empty
   # print(climatefind.get_elevation_df_from_summary_csv(elevation_column='average_comfy_days'))
 
+def test_scale_onto_array():
+  assert climatefind.scale_onto_array(
+    vmin=0,
+    vmax=365,
+    val=1,
+    arr=[ i for i in range(0,20) ]
+  ) == 0
+
+  assert climatefind.scale_onto_array(
+    vmin=0,
+    vmax=365,
+    val=364,
+    arr=[ i for i in range(0,20) ]
+  ) == 19
+
+  assert climatefind.scale_onto_array(
+    vmin=0,
+    vmax=365,
+    val=182,
+    arr=[ i for i in range(0,20) ]
+  ) == 10
+
 def test_make_folium_elevation_map():
-  assert climatefind.make_folium_elevation_map(elevation_column='average_comfy_days', color_scheme='high_green')
-  assert climatefind.make_folium_elevation_map(elevation_column='aug_1_tmin', color_scheme='high_red')
+  assert climatefind.make_folium_elevation_map(elevation_column='average_comfy_days', color_scheme='high_green', units='days/year')
+  assert climatefind.make_folium_elevation_map(elevation_column='total_comfy_days', color_scheme='high_green', units='days/year')
 
 ## 256 batches
 # def test_main_fast():

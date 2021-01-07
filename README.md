@@ -2,6 +2,10 @@
 
 A project to help find the right climate.
 
+Green is better.
+
+![GHCN Average Comfy Days](img/ghcn_average_comfy_days.png)
+
 ## Typical Meteorological Year v3 (TMY3) Version
 
 The original version of this application used the TMY3 data which was available from [nsrdb.nrel.gov](https://nsrdb.nrel.gov/about/tmy.html) in CSV format.
