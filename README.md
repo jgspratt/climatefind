@@ -13,7 +13,7 @@ To zoom in, you will need to [download the 22MB+ HTML file](https://github.com/j
 The next generation software was based on the [GHCN data set](https://www.ncei.noaa.gov/data/daily-summaries/archive/daily-summaries-latest.tar.gz).
 As of 2021-01-01, this project is starting.
 
-The main advanatage of this version is the geographic density of locations (approximately 60,000 US locations in total over the entire data set).
+The main advanatage of this version is the geographic density of locations (approximately 60,000 US locations in total over the entire data set with approximately 16,000 with at least one complete year of temperature records).
 The main disadvantage of this version is the lack of hourly granularity and humidity data.
 
 ## Typical Meteorological Year v3 (TMY3) Version
