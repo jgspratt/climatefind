@@ -9,6 +9,10 @@ Green is better.  Red is worse.
 ![GHCN Average Comfy Days](img/ghcn_average_comfy_days.png)
 
 To zoom in, you will need to [download the 22MB+ HTML file](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/average_comfy_days.html?raw=true) (right-click, download).
+You will have to do this on a computer with a desktop operating system.
+Save the file somewhere and then open it up with your browser.
+Github can't seem to serve it directly to your browser.
+Be patient when opening it: it can take 10+ seconds to render: there are 16,000 weather stations to render and a 20-layer contour to render on top of that.
 
 The next generation software was based on the [GHCN data set](https://www.ncei.noaa.gov/data/daily-summaries/archive/daily-summaries-latest.tar.gz).
 As of 2021-01-01, this project is starting.
