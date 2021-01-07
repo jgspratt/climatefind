@@ -699,15 +699,19 @@ def get_elevation_df_from_summary_csv(elevation_column='elev_m', no_negatives=Tr
   """
   Elevation may or may not be an actual elevation.
   """
+  usecols=[
+    'lat',
+    'lon',
+    elevation_column,
+    'name',
+    'id',
+  ]
+  if elevation_column != 'elev_m':
+    usecols += ['elev_m']
+
   df = pandas.read_csv(
     f'{GHCN_DIR}/spool/comfy/year.csv',
-    usecols=[
-      'lat',
-      'lon',
-      elevation_column,
-      'name',
-      'id',
-    ],
+    usecols=usecols
   )
   df.rename(columns={elevation_column: 'elev'}, inplace=True)
   if no_negatives:
@@ -786,7 +790,7 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
   geomap1 = folium.Map(
     location=[42.0573, -102.8017],
     zoom_start=6,
-    tiles="Stamen Terrain"
+    tiles=ENV['map']['tiles']
   )
 
   # Plot the contour on Folium map
@@ -805,12 +809,13 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
   geomap1.add_child(color_map)
 
   # Add all stations to map
-  for lat, lon, elev, name, id in zip(
+  for lat, lon, elev, name, id, elev_m in zip(
     df['lat'],
     df['lon'],
     df['elev'],
     df['name'],
     df['id'],
+    df['elev_m'],
   ):
     this_color = scale_onto_array(
       vmin=elevation_min,
@@ -818,11 +823,15 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
       val=elev,
       arr=colors
     )
+    if elevation_column == 'elev_m':
+      tooltip = f'{id} {name} {lat},{lon} @ {elev}{units}'
+    else:
+      tooltip = f'{id} {name} {lat},{lon} @ {elev_m}m @ {elev} {units}'
     folium.CircleMarker(
       [lat, lon],
       radius=4, # pixels
-      tooltip=f'{id} {name} {lat},{lon} @ {elev} {units}',
-      popup=f'{id} {name} {lat},{lon} @ {elev} {units}',
+      tooltip=tooltip,
+      popup=tooltip,
       color=this_color,
       fill=True,
       fillColor=this_color,
@@ -835,7 +844,7 @@ def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_gree
     force_separate_button=True
   ).add_to(geomap1)
 
-  test_html_filepath = f'{GHCN_DIR}/output/{elevation_column}.html'
+  test_html_filepath = f'''{GHCN_DIR}/output/{elevation_column}.{(ENV['map']['tiles']).replace(' ', '_')}.html'''
   geomap1.save(test_html_filepath)
   subprocess.Popen(['open', '-a', 'Google Chrome', test_html_filepath])
 

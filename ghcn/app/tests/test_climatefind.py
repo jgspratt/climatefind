@@ -185,7 +185,7 @@ def test_scale_onto_array():
 
 def test_make_folium_elevation_map():
   assert climatefind.make_folium_elevation_map(elevation_column='average_comfy_days', color_scheme='high_green', units='days/year')
-  assert climatefind.make_folium_elevation_map(elevation_column='total_comfy_days', color_scheme='high_green', units='days/year')
+  # assert climatefind.make_folium_elevation_map(elevation_column='total_comfy_days', color_scheme='high_green', units='days/year')
 
 ## 256 batches
 # def test_main_fast():
