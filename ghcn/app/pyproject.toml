@@ -13,6 +13,10 @@ geojson = "^2.5.0"
 folium = "^0.11.0"
 matplotlib = "^3.3.3"
 Shapely = "^1.7.1"
+branca = "^0.4.2"
+scipy = "^1.6.0"
+geojsoncontour = "^0.4.0"
+numpy = "^1.19.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

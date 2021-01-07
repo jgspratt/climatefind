@@ -16,11 +16,22 @@ import fnmatch
 import statistics
 import pprint
 import timeit
-
+import subprocess
 
 # Contrib
-import yaml
+import branca
+import folium
+import folium.plugins
+# from folium import plugins # TODO: needed or can we do folium.plugins?
+import geojsoncontour
+import matplotlib.pyplot
+import numpy
 import pandas
+import scipy
+import scipy.interpolate
+# from scipy.interpolate import griddata # TODO: or can we do scipy.interpolate?
+import scipy.ndimage
+import yaml
 
 # This module
 import climatefind
@@ -140,7 +151,94 @@ CALENDAR = {
 for month, meta in CALENDAR.items():
   CALENDAR[month]['days'] = [ i for i in range(1, (CALENDAR[month]['num_days'] + 1)) ]
 
-
+MAP_COLORS = {
+  'high_red': [
+    '#00FFFF',
+    '#00FFFF',
+    '#00FFFF',
+    '#00FFED',
+    '#00FFB3',
+    '#00FF7D',
+    '#00FF49',
+    '#00FF18',
+    '#00FF00',
+    '#00FF00',
+    '#00FF00',
+    '#19FF00',
+    '#47FF00',
+    '#72FF00',
+    '#9AFF00',
+    '#BFFF00',
+    '#E1FF00',
+    '#FFFF00',
+    '#FFFC00',
+    '#FFD700',
+    '#FFB400',
+    '#FF9B00',
+    '#FF8200',
+    '#FF6900',
+    '#FF4F00',
+    '#FF3400',
+    '#FF1900',
+    '#FF0000',
+    '#FF000A',
+    '#FF0024',
+    '#FF003F',
+    '#FF005A',
+    '#FF0075',
+    '#FF0091',
+    '#FF00AE',
+    '#FF00CB',
+    '#FF00E8',
+    '#FF00FF',
+    '#FF00FF',
+    '#EB00FF',
+    '#CE00FF',
+  ],
+  'high_green': [
+    '#CE00FF',
+    '#EB00FF',
+    '#FF00FF',
+    '#FF00FF',
+    '#FF00E8',
+    '#FF00CB',
+    '#FF00AE',
+    '#FF0091',
+    '#FF0075',
+    '#FF005A',
+    '#FF003F',
+    '#FF0024',
+    '#FF000A',
+    '#FF0000',
+    '#FF1900',
+    '#FF3400',
+    '#FF4F00',
+    '#FF6900',
+    '#FF8200',
+    '#FF9B00',
+    '#FFB400',
+    '#FFD700',
+    '#FFFC00',
+    '#FFFF00',
+    '#E1FF00',
+    '#BFFF00',
+    '#9AFF00',
+    '#72FF00',
+    '#47FF00',
+    '#19FF00',
+    '#00FF00',
+    '#00FF00',
+    '#00FF00',
+    '#00FF18',
+    '#00FF49',
+    '#00FF7D',
+    '#00FFB3',
+    '#00FFED',
+    '#00FFFF',
+    '#00FFFF',
+    '#00FFFF',
+  ]
+}
 
 def read_env(override=None) -> bool:
   """Read the global env from disk"""
@@ -185,6 +283,7 @@ def setup_spool():
     f'{GHCN_DIR}/spool/tmin',
     f'{GHCN_DIR}/spool/tmax',
     f'{GHCN_DIR}/spool/year',
+    f'{GHCN_DIR}/spool/comfy',
   ]
   for dir in dirs:
     if not os.path.isdir(dir):
@@ -195,19 +294,23 @@ def get_input_queue():
   return input_queue
 
 def get_spool(empty=False):
+  spool_dirs = [
+    'meta',
+    'tmax',
+    'tmin',
+    'year',
+    'comfy',
+  ]
+
   if empty:
-    return {
-      'meta': set(),
-      'tmax': set(),
-      'tmin': set(),
-      'year': set(),
-    }
+    return { spool_dir: set() for spool_dir in spool_dirs }
 
   return {
-    'meta': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob']) ]),
-    'tmax': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'tmax')).glob(ENV['input']['file_glob']) ]),
-    'tmin': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'tmin')).glob(ENV['input']['file_glob']) ]),
-    'year': set([ os.path.basename(file) for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'year')).glob(ENV['input']['file_glob']) ]),
+    spool_dir: set([
+       os.path.basename(file)
+       for file in pathlib.Path(os.path.join(GHCN_DIR, 'spool', spool_dir)).glob(ENV['input']['file_glob'])
+     ])
+    for spool_dir in spool_dirs
   }
 
 def check_all_files(hash_start='*', overwrite=False, write_meta=False, spool=None):
@@ -243,6 +346,45 @@ def check_all_files(hash_start='*', overwrite=False, write_meta=False, spool=Non
 
   LOG.info(f'Found {num_qualifying_files} qualifying files')
   return num_qualifying_files
+
+def spool_year_summary_csv(overwrite=False, spool=None):
+  queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'year')).glob(ENV['input']['file_glob'])
+  if overwrite:
+    spool = get_spool(empty=True)
+  else:
+    if not spool:
+      spool = get_spool()
+
+  if 'year.csv' in spool['comfy'] and not overwrite:
+    return True
+
+  comfy = {}
+  file_num = 0
+  for file in queue:
+    file_num += 1
+    if file_num % 100 == 0:
+      LOG.info(f'Loading file {file_num}')
+    with open(file.resolve()) as f:
+      year = json.load(f)
+      comfy[file_num] = {
+        'id': year['meta']['id'],
+        'state': year['meta']['state'],
+        'start_date': year['meta']['start_date'],
+        'end_date': year['meta']['end_date'],
+        'lat': year['meta']['lat'],
+        'lon': year['meta']['lon'],
+        'elev_m': year['meta']['elev_m'],
+        'total_comfy_days': year['total_comfy_days'],
+        'average_comfy_days': year['average_comfy_days'],
+        'aug_1_tmin': year["8"]['comfy_days']["1"]['tmin_mean'],
+        'aug_1_tmax': year["8"]['comfy_days']["1"]['tmax_mean'],
+        'name': year['meta']['name'],
+      }
+
+  comfy_df = pandas.DataFrame.from_dict(comfy, orient="index")
+  comfy_df.sort_values(['state', 'average_comfy_days'], inplace=True)
+  comfy_df.to_csv(f'{GHCN_DIR}/spool/comfy/year.csv')
+  return True
 
 def spool_tmax_tmin(hash_start='*', overwrite=False, spool=None):
   queue = pathlib.Path(os.path.join(GHCN_DIR, 'spool', 'meta')).glob(ENV['input']['file_glob'])
@@ -547,6 +689,124 @@ def is_usa_location_from_csv(csv):
   return bool(get_state_from_csv())
 
 
+def get_elevation_df_from_summary_csv(elevation_column='elev_m', no_negatives=True):
+  """
+  Elevation may or may not be an actual elevation.
+  """
+  df = pandas.read_csv(
+    f'{GHCN_DIR}/spool/comfy/year.csv',
+    usecols=[
+      'lat',
+      'lon',
+      elevation_column,
+    ],
+  )
+  df.rename(columns={elevation_column: 'elev'}, inplace=True)
+  if no_negatives:
+    df[df['elev'] < 0] = 0
+    return df
+  else:
+    return df
+
+def make_folium_elevation_map(elevation_column='elev_m', color_scheme='high_green'):
+  df = get_elevation_df_from_summary_csv(elevation_column)
+  colors = MAP_COLORS[color_scheme]
+  num_colors = len(colors)
+
+  # Setup minimum and maximum values for the contour lines
+  elevation_min = df['elev'].min()
+  elevation_max = df['elev'].max()
+
+  # Setup colormap
+  color_map = branca.colormap.LinearColormap(
+    colors,
+    vmin=elevation_min,
+    vmax=elevation_max
+  ).to_step(
+    num_colors
+  )
+
+  # Convertion from dataframe to array
+  x = numpy.asarray(df.lon.tolist()) # note: 'lon'
+  y = numpy.asarray(df.lat.tolist()) # note: 'lat'
+  z = numpy.asarray(df.elev.tolist())
+
+  # Make a grid
+  x_arr          = numpy.linspace(numpy.min(x), numpy.max(x), 500)
+  y_arr          = numpy.linspace(numpy.min(y), numpy.max(y), 500)
+  x_mesh, y_mesh = numpy.meshgrid(x_arr, y_arr)
+
+  # Grid the elevation (Edited on March 30th, 2020)
+  z_mesh = scipy.interpolate.griddata(
+    (x, y),
+    z,
+    (x_mesh, y_mesh),
+    method='linear'
+  )
+
+  # Use Gaussian filter to smoothen the contour
+  sigma = [1, 1]
+  z_mesh = scipy.ndimage.filters.gaussian_filter(
+    z_mesh,
+    sigma,
+    mode='constant'
+  )
+
+  # Create the contour
+  contourf = matplotlib.pyplot.contourf(
+    x_mesh,
+    y_mesh,
+    z_mesh,
+    num_colors,
+    alpha=0.75,
+    colors=colors,
+    linestyles='None',
+    vmin=elevation_min,
+    vmax=elevation_max
+  )
+
+  # Convert matplotlib contourf to geojson
+  geojson = geojsoncontour.contourf_to_geojson(
+    contourf=contourf,
+    min_angle_deg=3.0,
+    ndigits=5,
+    stroke_width=2,
+    fill_opacity=0.6
+  )
+
+  # Set up the map placeholdder
+  geomap1 = folium.Map(
+    location=[42.0573, -102.8017],
+    zoom_start=6,
+    tiles="Stamen Terrain"
+  )
+
+  # Plot the contour on Folium map
+  folium.GeoJson(
+    geojson,
+    style_function=lambda x: {
+      'color':     x['properties']['stroke'],
+      'weight':    x['properties']['stroke-width'],
+      'fillColor': x['properties']['fill'],
+      'opacity':   0.5,
+    }).add_to(geomap1)
+
+  # Add the colormap to the folium map for legend
+  color_map.caption = 'Elevation'
+  geomap1.add_child(color_map)
+
+  # Add the legend to the map
+  folium.plugins.Fullscreen(
+    position='topright',
+    force_separate_button=True
+  ).add_to(geomap1)
+
+  test_html_filepath = f'{GHCN_DIR}/output/{elevation_column}.html'
+  geomap1.save(test_html_filepath)
+  subprocess.Popen(['open', '-a', 'Google Chrome', test_html_filepath])
+
+  return True
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--hash-start', dest='hash_start', default='*', required=False)
@@ -559,7 +819,7 @@ def main():
   setup_logger()
   setup_spool()
 
-  time.sleep(1)
+  time.sleep(300)
 
   spool = get_spool()
   check_all_files(hash_start=args.hash_start, overwrite=args.overwrite, write_meta=True, spool=spool)

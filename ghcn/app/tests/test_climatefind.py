@@ -154,31 +154,44 @@ def test_num_comfy_days_per_year_from_csv():
 # def test_spool_tmax_tmin():
 #   climatefind.spool_tmax_tmin(hash_start='00*')
 
-def test_main_fast():
-  procs = []
-  # for i in range(0,16):
-  for i in range(0,16):
-    print()
-    for j in range (0,16):
-      hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}*'''
-      print(hash_start)
-      procs.append(
-        subprocess.Popen(
-          [
-            'poetry',
-            'run',
-            'python3',
-            f'{GHCN_DIR}/app/climatefind/main.py',
-            '--hash-start',
-            hash_start,
-            '--overwrite'
-          ]
-        )
-      )
+def test_spool_year_summary_csv():
+  assert climatefind.spool_year_summary_csv()
 
-    for proc in procs:
-      proc.communicate()
+def test_get_elevation_df_from_summary_csv():
+  assert not climatefind.get_elevation_df_from_summary_csv().empty
+  # print(climatefind.get_elevation_df_from_summary_csv(elevation_column='average_comfy_days'))
 
+def test_make_folium_elevation_map():
+  assert climatefind.make_folium_elevation_map(elevation_column='average_comfy_days', color_scheme='high_green')
+  assert climatefind.make_folium_elevation_map(elevation_column='aug_1_tmin', color_scheme='high_red')
+
+## 256 batches
+# def test_main_fast():
+#   procs = []
+#   # for i in range(0,16):
+#   for i in range(0,16):
+#     print()
+#     for j in range (0,16):
+#       hash_start = f'''{str(hex(i))[2:]}{str(hex(j))[2:]}*'''
+#       print(hash_start)
+#       procs.append(
+#         subprocess.Popen(
+#           [
+#             'poetry',
+#             'run',
+#             'python3',
+#             f'{GHCN_DIR}/app/climatefind/main.py',
+#             '--hash-start',
+#             hash_start,
+#             '--overwrite'
+#           ]
+#         )
+#       )
+#
+#     for proc in procs:
+#       proc.communicate()
+
+## 4096 batches
 # def test_main():
 #   procs = []
 #   # for i in range(0,16):
