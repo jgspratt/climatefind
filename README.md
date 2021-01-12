@@ -20,7 +20,7 @@ Be patient when opening it: it can take 10+ seconds to render: there are 16,000 
 The next generation software was based on the [GHCN data set](https://www.ncei.noaa.gov/data/daily-summaries/archive/daily-summaries-latest.tar.gz).
 As of 2021-01-01, this project is starting.
 
-The main advanatage of this version is the geographic density of locations (approximately 60,000 US locations in total over the entire data set with approximately 16,000 with at least one complete year of temperature records).
+The main advantage of this version is the geographic density of locations (approximately 60,000 US locations in total over the entire data set with approximately 16,000 with at least one complete year of temperature records).
 The main disadvantage of this version is the lack of hourly granularity and humidity data.
 
 ### What counts as a comfortable day?
@@ -29,7 +29,7 @@ Configuration for these parameters is found in [ghcn/env/env.yml][ghcn/env/env.y
 As it is set currently (2021-01-11), the logic is as follows:
 
 * A day is comfortable if the daily high fell between 10 (50F) and 20C (68).
-* A day is comfrotable if the dayly high fell above 20C AND the daily low fell below 14C.
+* A day is comfortable if the daily high fell above 20C AND the daily low fell below 14C.
 * Any other day is uncomfortable.
 
 Why these numbers?
