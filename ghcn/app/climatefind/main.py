@@ -380,6 +380,19 @@ def spool_year_summary_csv(overwrite=False, spool=None):
         'aug_1_tmax': year["8"]['comfy_days']["1"]['tmax_mean'],
         'name': year['meta']['name'],
       }
+      for month_num in CALENDAR:
+        comfy[file_num][f'''{CALENDAR[month_num]['name']}_percent_comfy'''] = round(
+          (
+            (
+              sum(
+                [
+                  (day['comfy'] / (day['uncomfy'] + day['comfy'] ))
+                  for day_num, day in year[str(month_num)]['comfy_days'].items()
+                ]
+              ) / CALENDAR[month_num]['num_days']
+            ) * 100 # Convert to percent
+          ), 2
+        )
 
   comfy_df = pandas.DataFrame.from_dict(comfy, orient="index")
   comfy_df.sort_values(['state', 'average_comfy_days'], inplace=True)

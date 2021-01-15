@@ -77,3 +77,100 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
         * The prevailing environmental conditions plus a metabolic rate of `5` (fast walk) plus a clothing factor of `0.8` (slightly less than a full business suit)
         * The prevailing environmental conditions plus a metabolic rate of `3` (normal walk) plus a clothing factor of `0.4` (slightly more than walking shorts)
 * In addition, the `Fast vars` are also available for a faster way to calculate the day with less computing power.
+
+
+## Monthly GHCN Graphics
+
+### January
+
+![Jan](img/01_jan_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### February
+
+![Feb](img/02_feb_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### March
+
+![Mar](img/03_mar_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### April
+
+![Apr](img/04_apr_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### May
+
+![May](img/05_may_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### June
+
+![Jun](img/06_jun_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### July
+
+![Jul](img/07_jul_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### August
+
+![Aug](img/08_aug_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### September
+
+![Sep](img/09_sep_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### October
+
+![Oct](img/10_oct_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### November
+
+![Nov](img/11_nov_percent_comfy.Stamen_Terrain.html.png)
+
+***
+
+<br/>
+
+### December
+
+![Dec](img/12_dec_percent_comfy.Stamen_Terrain.html.png)
+
+***
