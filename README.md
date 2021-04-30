@@ -28,8 +28,8 @@ The main disadvantage of this version is the lack of hourly granularity and humi
 Configuration for these parameters is found in [ghcn/env/env.yml][ghcn/env/env.yml].
 As it is set currently (2021-01-11), the logic is as follows:
 
-* A day is comfortable if the daily high fell between 10 (50F) and 20C (68).
-* A day is comfortable if the daily high fell above 20C AND the daily low fell below 14C.
+* A day is comfortable if the daily high fell between 10 (50F) and 20C (68F).
+* A day is comfortable if the daily high fell above 20C (68F) AND the daily low fell below 14C (57F).
 * Any other day is uncomfortable.
 
 Why these numbers?
