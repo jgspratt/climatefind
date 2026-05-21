@@ -1,6 +1,12 @@
 # climatefind ghcn input
 input/queue/*
+# Per-station JSON dumps under spool/{meta,year,tmin,tmax} can grow to ~500MB
+# total. Keep the bulky dirs ignored but commit the small summary CSV so the
+# elevation-map regen never needs the raw GHCN archive again.
 spool/*
+!spool/comfy/
+spool/comfy/*
+!spool/comfy/year.csv
 *.old.*/**
 *.tar.gz
 archive/tmp/*
