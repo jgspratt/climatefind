@@ -40,7 +40,9 @@ Recipe for taking the raw NOAA GHCN daily-summaries archive and producing the
 
    This walks `ghcn/input/queue/*.csv`, writes per-station intermediates to
    `ghcn/spool/{meta,tmin,tmax,year}/`, then a summary `ghcn/spool/comfy/year.csv`,
-   then renders 15 `*.OpenTopoMap.html` files into `ghcn/output/`.
+   then renders `15 metrics × N regions` `*.OpenTopoMap.html` files into
+   `ghcn/output/<region>/`. With the current `REGIONS = {"conus", "world"}`,
+   that's 30 HTMLs.
 
    Without `--full-pipeline`, `main()` stops after the spool stage (no
    `year.csv`, no maps). With `--regenerate-maps`, it only re-renders maps
@@ -76,9 +78,9 @@ Recipe for taking the raw NOAA GHCN daily-summaries archive and producing the
 |------------|--------------------------------------------------------------------------------|
 | 1          | `ghcn/input/queue/daily-summaries-latest.tar.gz` exists, ~7.4 GB              |
 | 2          | `ghcn/input/queue/` has ~132k `*.csv` files, ~144 GB                           |
-| 3 (ingest) | `ghcn/spool/comfy/year.csv` regenerated with ~16k rows                         |
-| 3 (render) | 15 `*.OpenTopoMap.html` files in `ghcn/output/`, each ~22 MB                   |
-| 4          | Average-comfy-days map renders with OpenTopoMap tiles + contours + markers     |
+| 3 (ingest) | `ghcn/spool/comfy/year.csv` regenerated; column `country` populated; rows now span the globe (US ~16k + non-US many more) |
+| 3 (render) | 15 HTMLs per region under `ghcn/output/<region>/`; CONUS ~22 MB each, world significantly larger (~80k+ markers) |
+| 4          | `ghcn/output/conus/average_comfy_days.OpenTopoMap.html` + `ghcn/output/world/average_comfy_days.OpenTopoMap.html` both render with OpenTopoMap tiles + contours + markers |
 
 ## Extra info
 
@@ -101,6 +103,31 @@ from each per-station CSV's `NAME` field suffix.
 Tile provider is configured in `ghcn/env/env.yml` under `map:`. OpenTopoMap is
 the current default (Stamen Terrain went dark in 2023 when Stamen moved to
 Stadia Maps). The commented OpenStreetMap block is a drop-in alternative.
+
+### Adding a region
+
+Regions are defined in two places that need to stay in lockstep:
+
+1. `ghcn/app/climatefind/main.py` — `REGIONS` dict (filter predicate over a
+   `year.csv` row, plus folium `center`/`zoom`).
+2. `ghcn/app/render_pngs.py` — `REGIONS` dict (Playwright `center`/`zoom`
+   plus PNG `viewport`).
+
+To add `canada`, add an entry to both:
+
+```python
+"canada": {
+    "filter": lambda r: r["country"] == "CA",   # main.py only
+    "center": (60.0, -100.0),
+    "zoom": 3,
+    "viewport": (2640, 1430),
+},
+```
+
+Then `python3 -m climatefind.main --regenerate-maps` renders the new
+region's HTMLs (no ingest re-run needed — `year.csv` is region-agnostic),
+followed by `python3 render_pngs.py --only canada` for the PNGs. Wire the
+new images into `README.md`.
 
 ### Pipeline revival TODOs (deferred work)
 

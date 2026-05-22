@@ -6,11 +6,11 @@ A project to help find the right climate.
 
 Green is better.  Red is worse.
 
-![GHCN Average Comfy Days](img/ghcn_average_comfy_days.png)
+![GHCN Average Comfy Days — Continental US](img/conus/average_comfy_days.png)
 
-To zoom in, you will need to [download the 22MB+ HTML file](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/average_comfy_days.OpenTopoMap.html?raw=true) (right-click, "download" or "save link as").
+To zoom in, you will need to [download the 22MB+ HTML file](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/conus/average_comfy_days.OpenTopoMap.html?raw=true) (right-click, "download" or "save link as").
 
-See also the [OpenStreetMap version](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/average_comfy_days.OpenStreetMap.html?raw=true) with more street-level detail but less terrain detail.
+See also the [OpenStreetMap version](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/conus/average_comfy_days.OpenStreetMap.html?raw=true) with more street-level detail but less terrain detail.
 
 (The original Stamen Terrain tiles went dark in 2023 when [Stamen migrated to Stadia Maps](https://stadiamaps.com/stamen/onboarding/). The terrain layer is now served by [OpenTopoMap](https://opentopomap.org).)
 
@@ -81,11 +81,21 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 * In addition, the `Fast vars` are also available for a faster way to calculate the day with less computing power.
 
 
-## Monthly GHCN Graphics
+## Whole-World GHCN Version
+
+The same data, rendered globally. Coverage is densest over North America,
+Europe, and Australia; sparser elsewhere.
+
+![GHCN Average Comfy Days — World](img/world/average_comfy_days.png)
+
+The world HTML is much heavier than the CONUS one (~80k+ stations vs ~16k); download it [here](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/world/average_comfy_days.OpenTopoMap.html?raw=true) and expect a slow page load.
+
+
+## Monthly GHCN Graphics — Continental US
 
 ### January
 
-![Jan](img/months/01_jan_percent_comfy.png)
+![Jan](img/conus/months/01_jan_percent_comfy.png)
 
 ***
 
@@ -93,7 +103,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### February
 
-![Feb](img/months/02_feb_percent_comfy.png)
+![Feb](img/conus/months/02_feb_percent_comfy.png)
 
 ***
 
@@ -101,7 +111,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### March
 
-![Mar](img/months/03_mar_percent_comfy.png)
+![Mar](img/conus/months/03_mar_percent_comfy.png)
 
 ***
 
@@ -109,7 +119,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### April
 
-![Apr](img/months/04_apr_percent_comfy.png)
+![Apr](img/conus/months/04_apr_percent_comfy.png)
 
 ***
 
@@ -117,7 +127,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### May
 
-![May](img/months/05_may_percent_comfy.png)
+![May](img/conus/months/05_may_percent_comfy.png)
 
 ***
 
@@ -125,7 +135,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### June
 
-![Jun](img/months/06_jun_percent_comfy.png)
+![Jun](img/conus/months/06_jun_percent_comfy.png)
 
 ***
 
@@ -133,7 +143,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### July
 
-![Jul](img/months/07_jul_percent_comfy.png)
+![Jul](img/conus/months/07_jul_percent_comfy.png)
 
 ***
 
@@ -141,7 +151,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### August
 
-![Aug](img/months/08_aug_percent_comfy.png)
+![Aug](img/conus/months/08_aug_percent_comfy.png)
 
 ***
 
@@ -149,7 +159,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### September
 
-![Sep](img/months/09_sep_percent_comfy.png)
+![Sep](img/conus/months/09_sep_percent_comfy.png)
 
 ***
 
@@ -157,7 +167,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### October
 
-![Oct](img/months/10_oct_percent_comfy.png)
+![Oct](img/conus/months/10_oct_percent_comfy.png)
 
 ***
 
@@ -165,7 +175,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### November
 
-![Nov](img/months/11_nov_percent_comfy.png)
+![Nov](img/conus/months/11_nov_percent_comfy.png)
 
 ***
 
@@ -173,6 +183,103 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### December
 
-![Dec](img/months/12_dec_percent_comfy.png)
+![Dec](img/conus/months/12_dec_percent_comfy.png)
+
+***
+
+
+## Monthly GHCN Graphics — Whole World
+
+### January
+
+![Jan world](img/world/months/01_jan_percent_comfy.png)
+
+***
+
+<br/>
+
+### February
+
+![Feb world](img/world/months/02_feb_percent_comfy.png)
+
+***
+
+<br/>
+
+### March
+
+![Mar world](img/world/months/03_mar_percent_comfy.png)
+
+***
+
+<br/>
+
+### April
+
+![Apr world](img/world/months/04_apr_percent_comfy.png)
+
+***
+
+<br/>
+
+### May
+
+![May world](img/world/months/05_may_percent_comfy.png)
+
+***
+
+<br/>
+
+### June
+
+![Jun world](img/world/months/06_jun_percent_comfy.png)
+
+***
+
+<br/>
+
+### July
+
+![Jul world](img/world/months/07_jul_percent_comfy.png)
+
+***
+
+<br/>
+
+### August
+
+![Aug world](img/world/months/08_aug_percent_comfy.png)
+
+***
+
+<br/>
+
+### September
+
+![Sep world](img/world/months/09_sep_percent_comfy.png)
+
+***
+
+<br/>
+
+### October
+
+![Oct world](img/world/months/10_oct_percent_comfy.png)
+
+***
+
+<br/>
+
+### November
+
+![Nov world](img/world/months/11_nov_percent_comfy.png)
+
+***
+
+<br/>
+
+### December
+
+![Dec world](img/world/months/12_dec_percent_comfy.png)
 
 ***
