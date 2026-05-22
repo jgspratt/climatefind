@@ -49,7 +49,7 @@ RENDERS = [
 VIEWPORT_W = 2640
 VIEWPORT_H = 1430
 CONUS_CENTER_LAT = 38.4
-CONUS_CENTER_LON = -97.5
+CONUS_CENTER_LON = -96.05
 CONUS_ZOOM = 6
 
 # Folium auto-generates a global `map_<hash>` for each map. Find it and set
