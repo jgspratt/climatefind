@@ -46,9 +46,9 @@ RENDERS = [
 
 # Viewport ratio matches the existing PNGs (~1.83:1) at 2x density for sharp
 # README rendering. CONUS center/zoom chosen to fit the lower 48.
-VIEWPORT_W = 2400
-VIEWPORT_H = 1300
-CONUS_CENTER_LAT = 39.5
+VIEWPORT_W = 2640
+VIEWPORT_H = 1430
+CONUS_CENTER_LAT = 38.4
 CONUS_CENTER_LON = -97.5
 CONUS_ZOOM = 6
 
