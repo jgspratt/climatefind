@@ -85,7 +85,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### January
 
-![Jan](img/01_jan_percent_comfy.Stamen_Terrain.html.png)
+![Jan](img/months/01_jan_percent_comfy.png)
 
 ***
 
@@ -93,7 +93,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### February
 
-![Feb](img/02_feb_percent_comfy.Stamen_Terrain.html.png)
+![Feb](img/months/02_feb_percent_comfy.png)
 
 ***
 
@@ -101,7 +101,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### March
 
-![Mar](img/03_mar_percent_comfy.Stamen_Terrain.html.png)
+![Mar](img/months/03_mar_percent_comfy.png)
 
 ***
 
@@ -109,7 +109,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### April
 
-![Apr](img/04_apr_percent_comfy.Stamen_Terrain.html.png)
+![Apr](img/months/04_apr_percent_comfy.png)
 
 ***
 
@@ -117,7 +117,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### May
 
-![May](img/05_may_percent_comfy.Stamen_Terrain.html.png)
+![May](img/months/05_may_percent_comfy.png)
 
 ***
 
@@ -125,7 +125,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### June
 
-![Jun](img/06_jun_percent_comfy.Stamen_Terrain.html.png)
+![Jun](img/months/06_jun_percent_comfy.png)
 
 ***
 
@@ -133,7 +133,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### July
 
-![Jul](img/07_jul_percent_comfy.Stamen_Terrain.html.png)
+![Jul](img/months/07_jul_percent_comfy.png)
 
 ***
 
@@ -141,7 +141,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### August
 
-![Aug](img/08_aug_percent_comfy.Stamen_Terrain.html.png)
+![Aug](img/months/08_aug_percent_comfy.png)
 
 ***
 
@@ -149,7 +149,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### September
 
-![Sep](img/09_sep_percent_comfy.Stamen_Terrain.html.png)
+![Sep](img/months/09_sep_percent_comfy.png)
 
 ***
 
@@ -157,7 +157,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### October
 
-![Oct](img/10_oct_percent_comfy.Stamen_Terrain.html.png)
+![Oct](img/months/10_oct_percent_comfy.png)
 
 ***
 
@@ -165,7 +165,7 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### November
 
-![Nov](img/11_nov_percent_comfy.Stamen_Terrain.html.png)
+![Nov](img/months/11_nov_percent_comfy.png)
 
 ***
 
@@ -173,6 +173,6 @@ Configuration is specified in [tmy3/config.yml](tmy3/config.yml).
 
 ### December
 
-![Dec](img/12_dec_percent_comfy.Stamen_Terrain.html.png)
+![Dec](img/months/12_dec_percent_comfy.png)
 
 ***

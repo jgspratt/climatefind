@@ -493,10 +493,14 @@ def _spool_tmax_tmin_one_worker(filename):
 
 
 def _render_one_map_worker(args):
-    """Stage-4 worker: render one folium map. args = (column, color_scheme, units)."""
-    column, color_scheme, units = args
+    """Stage-4 worker: render one folium map.
+
+    args = (column, output_name, color_scheme, units).
+    """
+    column, output_name, color_scheme, units = args
     return make_folium_elevation_map(
         elevation_column=column,
+        output_name=output_name,
         color_scheme=color_scheme,
         units=units,
     )
@@ -976,7 +980,7 @@ def get_elevation_df_from_summary_csv(elevation_column="elev_m", no_negatives=Tr
 
 
 def make_folium_elevation_map(
-    elevation_column="elev_m", color_scheme="high_green", units="m"
+    elevation_column="elev_m", output_name=None, color_scheme="high_green", units="m"
 ):
     df = get_elevation_df_from_summary_csv(elevation_column)
     colors = MAP_COLORS[color_scheme]
@@ -1088,7 +1092,9 @@ def make_folium_elevation_map(
     )
 
     tile_name = ENV["map"]["name"].replace(" ", "_")
-    test_html_filepath = f"""{GHCN_DIR}/output/{elevation_column}.{tile_name}.html"""
+    name = output_name or elevation_column
+    test_html_filepath = f"""{GHCN_DIR}/output/{name}.{tile_name}.html"""
+    os.makedirs(os.path.dirname(test_html_filepath), exist_ok=True)
     geomap1.save(test_html_filepath)
     matplotlib.pyplot.close("all")
     if ENV.get("map", {}).get("open_in_browser"):
@@ -1097,23 +1103,27 @@ def make_folium_elevation_map(
     return test_html_filepath
 
 
-# (column, color_scheme, units) for each map regenerated from year.csv.
+# (column, output_name, color_scheme, units) for each map regenerated from
+# year.csv. `column` is read from the CSV; `output_name` is the path
+# (relative to ghcn/output/, without the .{tile_name}.html suffix) where
+# the HTML lands. Months live in their own subdir so the output/ root stays
+# tidy.
 ALL_MAPS = [
-    ("average_comfy_days", "high_green", "days/year"),
-    ("aug_1_tmax", "high_red", "C"),
-    ("aug_1_tmin", "high_red", "C"),
-    ("jan_percent_comfy", "high_green", "% comfy"),
-    ("feb_percent_comfy", "high_green", "% comfy"),
-    ("mar_percent_comfy", "high_green", "% comfy"),
-    ("apr_percent_comfy", "high_green", "% comfy"),
-    ("may_percent_comfy", "high_green", "% comfy"),
-    ("jun_percent_comfy", "high_green", "% comfy"),
-    ("jul_percent_comfy", "high_green", "% comfy"),
-    ("aug_percent_comfy", "high_green", "% comfy"),
-    ("sep_percent_comfy", "high_green", "% comfy"),
-    ("oct_percent_comfy", "high_green", "% comfy"),
-    ("nov_percent_comfy", "high_green", "% comfy"),
-    ("dec_percent_comfy", "high_green", "% comfy"),
+    ("average_comfy_days", "average_comfy_days", "high_green", "days/year"),
+    ("aug_1_tmax", "aug_1_tmax", "high_red", "C"),
+    ("aug_1_tmin", "aug_1_tmin", "high_red", "C"),
+    ("jan_percent_comfy", "months/01_jan_percent_comfy", "high_green", "% comfy"),
+    ("feb_percent_comfy", "months/02_feb_percent_comfy", "high_green", "% comfy"),
+    ("mar_percent_comfy", "months/03_mar_percent_comfy", "high_green", "% comfy"),
+    ("apr_percent_comfy", "months/04_apr_percent_comfy", "high_green", "% comfy"),
+    ("may_percent_comfy", "months/05_may_percent_comfy", "high_green", "% comfy"),
+    ("jun_percent_comfy", "months/06_jun_percent_comfy", "high_green", "% comfy"),
+    ("jul_percent_comfy", "months/07_jul_percent_comfy", "high_green", "% comfy"),
+    ("aug_percent_comfy", "months/08_aug_percent_comfy", "high_green", "% comfy"),
+    ("sep_percent_comfy", "months/09_sep_percent_comfy", "high_green", "% comfy"),
+    ("oct_percent_comfy", "months/10_oct_percent_comfy", "high_green", "% comfy"),
+    ("nov_percent_comfy", "months/11_nov_percent_comfy", "high_green", "% comfy"),
+    ("dec_percent_comfy", "months/12_dec_percent_comfy", "high_green", "% comfy"),
 ]
 
 
@@ -1133,10 +1143,11 @@ def regenerate_all_maps(jobs=1):
                 LOG.info(f"  wrote {out}")
                 progress.tick(force=True)
     else:
-        for column, color_scheme, units in ALL_MAPS:
-            LOG.info(f"rendering {column} ({color_scheme}, {units})")
+        for column, output_name, color_scheme, units in ALL_MAPS:
+            LOG.info(f"rendering {output_name} ({color_scheme}, {units})")
             out = make_folium_elevation_map(
                 elevation_column=column,
+                output_name=output_name,
                 color_scheme=color_scheme,
                 units=units,
             )
