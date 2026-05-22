@@ -1143,7 +1143,7 @@ REGIONS = {
     "world": {
         "filter": lambda r: True,
         "center": (20.0, 0.0),
-        "zoom": 2,
+        "zoom": 4,
         "viewport": (2640, 1430),
     },
 }

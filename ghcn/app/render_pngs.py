@@ -33,7 +33,7 @@ IMG_DIR = REPO_ROOT / "img"
 # viewport + center + zoom. Keep these in sync when adding a region.
 REGIONS = {
     "conus": {"center": (38.4, -96.05), "zoom": 6, "viewport": (2640, 1430)},
-    "world": {"center": (20.0, 0.0), "zoom": 2, "viewport": (2640, 1430)},
+    "world": {"center": (20.0, 0.0), "zoom": 4, "viewport": (2640, 1430)},
 }
 
 # Metric paths under ghcn/output/<region>/ and img/<region>/, without the
