@@ -8,9 +8,11 @@ Green is better.  Red is worse.
 
 ![GHCN Average Comfy Days](img/ghcn_average_comfy_days.png)
 
-To zoom in, you will need to [download the 22MB+ HTML file](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/average_comfy_days.Stamen_Terrain.html?raw=true) (right-click, "download" or "save link as").
+To zoom in, you will need to [download the 22MB+ HTML file](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/average_comfy_days.OpenTopoMap.html?raw=true) (right-click, "download" or "save link as").
 
 See also the [OpenStreetMap version](https://github.com/jgspratt/climatefind/blob/master/ghcn/output/average_comfy_days.OpenStreetMap.html?raw=true) with more street-level detail but less terrain detail.
+
+(The original Stamen Terrain tiles went dark in 2023 when [Stamen migrated to Stadia Maps](https://stadiamaps.com/stamen/onboarding/). The terrain layer is now served by [OpenTopoMap](https://opentopomap.org).)
 
 You will have to do this on a computer with a desktop operating system.
 Save the file somewhere and then open it up with your browser.
