@@ -2,6 +2,7 @@
 
 # Core
 import argparse
+import concurrent.futures
 import json
 import logging
 import os
@@ -12,8 +13,15 @@ import typing
 import copy
 import fnmatch
 import statistics
-import timeit
 import subprocess
+import warnings
+
+# Each worker process re-imports `climatefind.main` (since we use `python -m
+# climatefind.main`), which trips a benign runpy warning. Silence it in both
+# the parent and any child interpreters via PYTHONWARNINGS (inherited by
+# spawned workers) and warnings.filterwarnings (parent process).
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="runpy")
+os.environ.setdefault("PYTHONWARNINGS", "ignore::RuntimeWarning:runpy")
 
 # Contrib
 import branca
@@ -39,7 +47,7 @@ import yaml
 import climatefind
 
 ENV: typing.Dict[typing.Any, typing.Any] = {}
-LOG: logging.Logger
+LOG: logging.Logger = logging.getLogger(__name__)
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 THIS_PARENT_DIR = os.path.dirname(THIS_DIR)
@@ -243,12 +251,114 @@ MAP_COLORS = {
 }
 
 
+def _fmt_dur(seconds):
+    if seconds is None or seconds == float("inf") or seconds != seconds:
+        return "?"
+    s = int(seconds)
+    h, rem = divmod(s, 3600)
+    m, sec = divmod(rem, 60)
+    if h:
+        return f"{h}h{m:02d}m{sec:02d}s"
+    if m:
+        return f"{m}m{sec:02d}s"
+    return f"{sec}s"
+
+
+# Module-level pipeline tracking so each stage's progress logger can also
+# report overall elapsed + ETA across all four stages.
+_PIPELINE_START_TIME = None
+_PIPELINE_INPUT_COUNT = None  # set by check_all_files (stage 1 total)
+_PIPELINE_QUALIFYING = None  # set after check_all_files (stage 1) completes
+
+# Heuristic seconds-per-item used to estimate future-stage runtime before we
+# have observed rates. Refined informally from smoke tests.
+_STAGE_SEC_PER_ITEM = {
+    1: 0.03,  # check_all_files: pandas.read_csv per input CSV
+    2: 0.25,  # spool_tmax_tmin: per qualifying station
+    3: 0.05,  # spool_year_summary_csv: per qualifying station
+    4: 30.0,  # regenerate_all_maps: per map (15 maps)
+}
+_STAGE_FIXED_COUNT = {4: 15}
+
+
+def _overall_eta(current_stage, stage_done, stage_total, stage_rate):
+    """Return (overall_elapsed_sec, overall_remaining_sec) or (None, None)."""
+    if _PIPELINE_START_TIME is None:
+        return None, None
+    elapsed = time.monotonic() - _PIPELINE_START_TIME
+    remaining = 0.0
+
+    # Current stage's remaining time, using observed rate if available.
+    if stage_rate > 0:
+        remaining += max(0.0, (stage_total - stage_done) / stage_rate)
+    else:
+        remaining += _STAGE_SEC_PER_ITEM.get(current_stage, 1.0) * max(
+            0, stage_total - stage_done
+        )
+
+    # Future stages, using heuristics or known qualifying-station count.
+    qual = _PIPELINE_QUALIFYING
+    if qual is None and _PIPELINE_INPUT_COUNT:
+        # Pre-stage-1: rough estimate that ~12% of input stations qualify.
+        qual = int(_PIPELINE_INPUT_COUNT * 0.12)
+    for s in range(current_stage + 1, 5):
+        if s in _STAGE_FIXED_COUNT:
+            remaining += _STAGE_SEC_PER_ITEM[s] * _STAGE_FIXED_COUNT[s]
+        elif qual is not None:
+            remaining += _STAGE_SEC_PER_ITEM[s] * qual
+
+    return elapsed, remaining
+
+
+class _Progress:
+    """Log [stage i/N: name] pos/total (pct) rate eta at most every 10s."""
+
+    def __init__(self, stage_name, total, stage_index, stage_count, log_every_sec=10):
+        self.stage_name = stage_name
+        self.total = total
+        self.stage_index = stage_index
+        self.stage_count = stage_count
+        self.log_every_sec = log_every_sec
+        self.start = time.monotonic()
+        self.last_log = 0.0
+        self.done = 0
+
+    def tick(self, n=1, force=False):
+        self.done += n
+        now = time.monotonic()
+        if not force and (now - self.last_log) < self.log_every_sec:
+            return
+        elapsed = now - self.start
+        rate = (self.done / elapsed) if elapsed > 0 else 0
+        remaining = ((self.total - self.done) / rate) if rate > 0 else float("inf")
+        pct = (self.done * 100 / self.total) if self.total else 0
+        overall_elapsed, overall_remaining = _overall_eta(
+            self.stage_index, self.done, self.total, rate
+        )
+        overall_str = ""
+        if overall_elapsed is not None:
+            overall_str = (
+                f" | overall elapsed={_fmt_dur(overall_elapsed)} "
+                f"eta={_fmt_dur(overall_remaining)}"
+            )
+        LOG.info(
+            f"[stage {self.stage_index}/{self.stage_count}: {self.stage_name}] "
+            f"{self.done}/{self.total} ({pct:.1f}%) "
+            f"rate={rate:.1f}/s elapsed={_fmt_dur(elapsed)} eta={_fmt_dur(remaining)}"
+            f"{overall_str}"
+        )
+        self.last_log = now
+
+    def done_now(self):
+        self.tick(n=0, force=True)
+
+
 def read_env(override=None) -> bool:
     """Read the global env from disk"""
     global ENV
     env_files_sorted = sorted(pathlib.Path(os.path.join(GHCN_DIR, "env")).glob("*.yml"))
     for file in env_files_sorted:
-        print(f"Opening {file.resolve()}")
+        LOG.debug(f"Opening {file.resolve()}")
         with open(file.resolve()) as env_file:
             ENV = climatefind.utils.deep_dict_merge(
                 ENV, yaml.load(env_file, Loader=yaml.FullLoader)
@@ -293,6 +403,7 @@ def setup_spool():
         f"{GHCN_DIR}/spool/tmax",
         f"{GHCN_DIR}/spool/year",
         f"{GHCN_DIR}/spool/comfy",
+        f"{GHCN_DIR}/spool/rejected",
     ]
     for dir in dirs:
         if not os.path.isdir(dir):
@@ -313,6 +424,7 @@ def get_spool(empty=False):
         "tmin",
         "year",
         "comfy",
+        "rejected",
     ]
 
     if empty:
@@ -331,47 +443,126 @@ def get_spool(empty=False):
     }
 
 
-def check_all_files(hash_start="*", overwrite=False, write_meta=False, spool=None):
-    queue = get_input_queue()
+def _worker_init():
+    """ProcessPool initializer: each worker process needs ENV loaded."""
+    read_env()
+
+
+def _check_one_worker(filepath_str):
+    """Stage-1 worker: read one input CSV; write spool/meta/<filename> if it qualifies.
+
+    Non-qualifying files get an empty marker in spool/rejected/<filename> so
+    future runs can skip them without re-reading the CSV.
+
+    Returns 1 if the station qualified (US + complete year), else 0.
+    """
+    filepath = filepath_str[len(GHCN_DIR) :]
+    filename = os.path.basename(filepath_str)
+    meta = read_usa_ghcn_file_meta(filepath)
+    if not meta or not meta.get("has_complete_temp_year"):
+        # Touch a marker so the next run's filter skips this file.
+        with open(f"{GHCN_DIR}/spool/rejected/{filename}", "w"):
+            pass
+        return 0
+    with open(f"{GHCN_DIR}/spool/meta/{filename}", "w") as f:
+        f.write(json.dumps(meta, indent=2))
+    return 1
+
+
+def _spool_tmax_tmin_one_worker(filename):
+    """Stage-2 worker: build tmax/tmin/year JSON for one qualifying station."""
+    meta = read_usa_ghcn_file_meta(f"input/queue/{filename}")
+    csv = csv_from_temp_ghcn_file(f"input/queue/{filename}")
+    year = num_comfy_days_per_year_from_csv(csv)
+    year["meta"] = meta
+    tmaxs = {"months": {}, "meta": meta}
+    tmins = {"months": {}, "meta": meta}
+    for month in range(1, 13):
+        tmaxs["months"][month] = {}
+        tmins["months"][month] = {}
+        for day in year[month]["days"]:
+            tmaxs["months"][month][day] = year[month]["comfy_days"][day]["tmax_mean"]
+            tmins["months"][month][day] = year[month]["comfy_days"][day]["tmin_mean"]
+    with open(f"{GHCN_DIR}/spool/tmax/{filename}", "w") as f:
+        f.write(climatefind.utils.compact_json_dumps(tmaxs, width=80, indent=2))
+    with open(f"{GHCN_DIR}/spool/tmin/{filename}", "w") as f:
+        f.write(climatefind.utils.compact_json_dumps(tmins, width=80, indent=2))
+    with open(f"{GHCN_DIR}/spool/year/{filename}", "w") as f:
+        f.write(climatefind.utils.compact_json_dumps(year, width=80, indent=2))
+    return filename
+
+
+def _render_one_map_worker(args):
+    """Stage-4 worker: render one folium map.
+
+    args = (column, output_name, color_scheme, units).
+    """
+    column, output_name, color_scheme, units = args
+    return make_folium_elevation_map(
+        elevation_column=column,
+        output_name=output_name,
+        color_scheme=color_scheme,
+        units=units,
+    )
+
+
+def check_all_files(
+    hash_start="*", overwrite=False, write_meta=False, spool=None, jobs=1
+):
+    global _PIPELINE_INPUT_COUNT, _PIPELINE_QUALIFYING
+    queue = sorted(get_input_queue())
+    _PIPELINE_INPUT_COUNT = len(queue)
     if overwrite:
         spool = get_spool(empty=True)
     else:
         if not spool:
             spool = get_spool()
-    num_qualifying_files = 0
-    num_files_checked = 0
+
+    # Split the queue: files that need processing vs. already-cached. A file
+    # is cached if it's in spool["meta"] (previously qualified) or in
+    # spool["rejected"] (previously rejected, marker file only).
+    cached = spool["meta"] | spool.get("rejected", set())
+    to_process = []
     for file in queue:
-        filepath = str(file)[len(GHCN_DIR) :]
         filename = os.path.basename(file)
         if (
             fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start)
-            and filename not in spool["meta"]
+            and filename not in cached
         ):
-            LOG.debug(f"checking {filepath}")
-            meta = read_usa_ghcn_file_meta(filepath)
-            num_files_checked += 1
-            if not meta:
-                LOG.debug(f"{filepath} is a non-US file")
-            elif meta["has_complete_temp_year"]:
-                LOG.info(
-                    f"""{filepath} from {meta["state"]} at {meta["lat"]},{meta["lon"]} {meta["elev_m"]}m is complete ({num_qualifying_files}/{num_files_checked} = {int((num_qualifying_files * 100 / num_files_checked))}%)"""
-                )
-                if write_meta:
-                    with open(f"{GHCN_DIR}/spool/meta/{filename}", "w") as f:
-                        f.write(json.dumps(meta, indent=2))
-                num_qualifying_files += 1
-            else:
-                LOG.debug(
-                    f"{filepath} is a US file without a complete year of temp records"
-                )
+            to_process.append(str(file))
+    already_done = len(queue) - len(to_process)
 
+    progress = _Progress("check_all_files", len(queue), 1, 4)
+    if already_done:
+        progress.tick(n=already_done, force=True)
+
+    num_qualifying_files = 0
+    if jobs > 1 and len(to_process) > 1:
+        LOG.info(
+            f"check_all_files: dispatching {len(to_process)} files across {jobs} workers"
+        )
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=jobs, initializer=_worker_init
+        ) as ex:
+            for qualified in ex.map(_check_one_worker, to_process, chunksize=64):
+                num_qualifying_files += qualified
+                progress.tick()
+    else:
+        for fp in to_process:
+            num_qualifying_files += _check_one_worker(fp)
+            progress.tick()
+
+    progress.done_now()
+    _PIPELINE_QUALIFYING = num_qualifying_files
     LOG.info(f"Found {num_qualifying_files} qualifying files")
     return num_qualifying_files
 
 
 def spool_year_summary_csv(overwrite=False, spool=None):
-    queue = pathlib.Path(os.path.join(GHCN_DIR, "spool", "year")).glob(
-        ENV["input"]["file_glob"]
+    queue = sorted(
+        pathlib.Path(os.path.join(GHCN_DIR, "spool", "year")).glob(
+            ENV["input"]["file_glob"]
+        )
     )
     if overwrite:
         spool = get_spool(empty=True)
@@ -382,12 +573,12 @@ def spool_year_summary_csv(overwrite=False, spool=None):
     if "year.csv" in spool["comfy"] and not overwrite:
         return True
 
+    progress = _Progress("spool_year_summary_csv", len(queue), 3, 4)
     comfy = {}
     file_num = 0
     for file in queue:
         file_num += 1
-        if file_num % 100 == 0:
-            LOG.info(f"Loading file {file_num}")
+        progress.tick()
         with open(file.resolve()) as f:
             year = json.load(f)
             comfy[file_num] = {
@@ -425,21 +616,26 @@ def spool_year_summary_csv(overwrite=False, spool=None):
                     )
                 )
 
+    progress.done_now()
     comfy_df = pandas.DataFrame.from_dict(comfy, orient="index")
     comfy_df.sort_values(["state", "average_comfy_days"], inplace=True)
     comfy_df.to_csv(f"{GHCN_DIR}/spool/comfy/year.csv")
     return True
 
 
-def spool_tmax_tmin(hash_start="*", overwrite=False, spool=None):
-    queue = pathlib.Path(os.path.join(GHCN_DIR, "spool", "meta")).glob(
-        ENV["input"]["file_glob"]
+def spool_tmax_tmin(hash_start="*", overwrite=False, spool=None, jobs=1):
+    queue = sorted(
+        pathlib.Path(os.path.join(GHCN_DIR, "spool", "meta")).glob(
+            ENV["input"]["file_glob"]
+        )
     )
     if overwrite:
         spool = get_spool(empty=True)
     else:
         if not spool:
             spool = get_spool()
+
+    to_process = []
     for file in queue:
         filename = os.path.basename((file.resolve()))
         if fnmatch.fnmatch(
@@ -449,38 +645,28 @@ def spool_tmax_tmin(hash_start="*", overwrite=False, spool=None):
             or filename not in spool["tmin"]
             or filename not in spool["year"]
         ):
-            start_time = timeit.default_timer()
-            meta = read_usa_ghcn_file_meta(f"input/queue/{filename}")
-            tmaxs = {
-                "months": {},
-                "meta": meta,
-            }
-            tmins = {
-                "months": {},
-                "meta": meta,
-            }
-            csv = csv_from_temp_ghcn_file(f"input/queue/{filename}")
-            year = num_comfy_days_per_year_from_csv(csv)
-            year["meta"] = meta
-            for month in range(1, 13):
-                tmaxs["months"][month] = {}
-                tmins["months"][month] = {}
-                for day in year[month]["days"]:
-                    tmaxs["months"][month][day] = year[month]["comfy_days"][day][
-                        "tmax_mean"
-                    ]
-                    tmins["months"][month][day] = year[month]["comfy_days"][day][
-                        "tmin_mean"
-                    ]
-            with open(f"{GHCN_DIR}/spool/tmax/{filename}", "w") as f:
-                f.write(climatefind.utils.compact_json_dumps(tmaxs, width=80, indent=2))
-            with open(f"{GHCN_DIR}/spool/tmin/{filename}", "w") as f:
-                f.write(climatefind.utils.compact_json_dumps(tmins, width=80, indent=2))
-            with open(f"{GHCN_DIR}/spool/year/{filename}", "w") as f:
-                f.write(climatefind.utils.compact_json_dumps(year, width=80, indent=2))
-            LOG.info(
-                f"Wrote tmin and tmax for {filename} in {round((timeit.default_timer() - start_time), 1)}s"
-            )
+            to_process.append(filename)
+    already_done = len(queue) - len(to_process)
+
+    progress = _Progress("spool_tmax_tmin", len(queue), 2, 4)
+    if already_done:
+        progress.tick(n=already_done, force=True)
+
+    if jobs > 1 and len(to_process) > 1:
+        LOG.info(
+            f"spool_tmax_tmin: dispatching {len(to_process)} stations across {jobs} workers"
+        )
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=jobs, initializer=_worker_init
+        ) as ex:
+            for _ in ex.map(_spool_tmax_tmin_one_worker, to_process, chunksize=16):
+                progress.tick()
+    else:
+        for filename in to_process:
+            _spool_tmax_tmin_one_worker(filename)
+            progress.tick()
+
+    progress.done_now()
 
 
 def num_comfy_days_per_year_from_csv(csv):
@@ -786,14 +972,15 @@ def get_elevation_df_from_summary_csv(elevation_column="elev_m", no_negatives=Tr
     # contour/marker math doesn't choke on NaN.
     df = df.dropna(subset=["elev"])
     if no_negatives:
-        df[df["elev"] < 0] = 0
-        return df
-    else:
-        return df
+        # Clamp negative elevations to 0 in the elev column only. The bare
+        # `df[mask] = 0` form assigns 0 to every column of matching rows,
+        # which pandas 2.x rejects for string columns like `name`/`id`.
+        df.loc[df["elev"] < 0, "elev"] = 0
+    return df
 
 
 def make_folium_elevation_map(
-    elevation_column="elev_m", color_scheme="high_green", units="m"
+    elevation_column="elev_m", output_name=None, color_scheme="high_green", units="m"
 ):
     df = get_elevation_df_from_summary_csv(elevation_column)
     colors = MAP_COLORS[color_scheme]
@@ -905,7 +1092,9 @@ def make_folium_elevation_map(
     )
 
     tile_name = ENV["map"]["name"].replace(" ", "_")
-    test_html_filepath = f"""{GHCN_DIR}/output/{elevation_column}.{tile_name}.html"""
+    name = output_name or elevation_column
+    test_html_filepath = f"""{GHCN_DIR}/output/{name}.{tile_name}.html"""
+    os.makedirs(os.path.dirname(test_html_filepath), exist_ok=True)
     geomap1.save(test_html_filepath)
     matplotlib.pyplot.close("all")
     if ENV.get("map", {}).get("open_in_browser"):
@@ -914,36 +1103,56 @@ def make_folium_elevation_map(
     return test_html_filepath
 
 
-# (column, color_scheme, units) for each map regenerated from year.csv.
+# (column, output_name, color_scheme, units) for each map regenerated from
+# year.csv. `column` is read from the CSV; `output_name` is the path
+# (relative to ghcn/output/, without the .{tile_name}.html suffix) where
+# the HTML lands. Months live in their own subdir so the output/ root stays
+# tidy.
 ALL_MAPS = [
-    ("average_comfy_days", "high_green", "days/year"),
-    ("aug_1_tmax", "high_red", "C"),
-    ("aug_1_tmin", "high_red", "C"),
-    ("jan_percent_comfy", "high_green", "% comfy"),
-    ("feb_percent_comfy", "high_green", "% comfy"),
-    ("mar_percent_comfy", "high_green", "% comfy"),
-    ("apr_percent_comfy", "high_green", "% comfy"),
-    ("may_percent_comfy", "high_green", "% comfy"),
-    ("jun_percent_comfy", "high_green", "% comfy"),
-    ("jul_percent_comfy", "high_green", "% comfy"),
-    ("aug_percent_comfy", "high_green", "% comfy"),
-    ("sep_percent_comfy", "high_green", "% comfy"),
-    ("oct_percent_comfy", "high_green", "% comfy"),
-    ("nov_percent_comfy", "high_green", "% comfy"),
-    ("dec_percent_comfy", "high_green", "% comfy"),
+    ("average_comfy_days", "average_comfy_days", "high_green", "days/year"),
+    ("aug_1_tmax", "aug_1_tmax", "high_red", "C"),
+    ("aug_1_tmin", "aug_1_tmin", "high_red", "C"),
+    ("jan_percent_comfy", "months/01_jan_percent_comfy", "high_green", "% comfy"),
+    ("feb_percent_comfy", "months/02_feb_percent_comfy", "high_green", "% comfy"),
+    ("mar_percent_comfy", "months/03_mar_percent_comfy", "high_green", "% comfy"),
+    ("apr_percent_comfy", "months/04_apr_percent_comfy", "high_green", "% comfy"),
+    ("may_percent_comfy", "months/05_may_percent_comfy", "high_green", "% comfy"),
+    ("jun_percent_comfy", "months/06_jun_percent_comfy", "high_green", "% comfy"),
+    ("jul_percent_comfy", "months/07_jul_percent_comfy", "high_green", "% comfy"),
+    ("aug_percent_comfy", "months/08_aug_percent_comfy", "high_green", "% comfy"),
+    ("sep_percent_comfy", "months/09_sep_percent_comfy", "high_green", "% comfy"),
+    ("oct_percent_comfy", "months/10_oct_percent_comfy", "high_green", "% comfy"),
+    ("nov_percent_comfy", "months/11_nov_percent_comfy", "high_green", "% comfy"),
+    ("dec_percent_comfy", "months/12_dec_percent_comfy", "high_green", "% comfy"),
 ]
 
 
-def regenerate_all_maps():
+def regenerate_all_maps(jobs=1):
     """Regenerate every output HTML map from spool/comfy/year.csv."""
-    for column, color_scheme, units in ALL_MAPS:
-        LOG.info(f"rendering {column} ({color_scheme}, {units})")
-        out = make_folium_elevation_map(
-            elevation_column=column,
-            color_scheme=color_scheme,
-            units=units,
+    progress = _Progress("regenerate_all_maps", len(ALL_MAPS), 4, 4)
+    # Cap at len(ALL_MAPS) — extra workers buy nothing.
+    pool_jobs = min(jobs, len(ALL_MAPS))
+    if pool_jobs > 1:
+        LOG.info(
+            f"regenerate_all_maps: rendering {len(ALL_MAPS)} maps across {pool_jobs} workers"
         )
-        LOG.info(f"  wrote {out}")
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=pool_jobs, initializer=_worker_init
+        ) as ex:
+            for out in ex.map(_render_one_map_worker, ALL_MAPS):
+                LOG.info(f"  wrote {out}")
+                progress.tick(force=True)
+    else:
+        for column, output_name, color_scheme, units in ALL_MAPS:
+            LOG.info(f"rendering {output_name} ({color_scheme}, {units})")
+            out = make_folium_elevation_map(
+                elevation_column=column,
+                output_name=output_name,
+                color_scheme=color_scheme,
+                units=units,
+            )
+            LOG.info(f"  wrote {out}")
+            progress.tick(force=True)
 
 
 def main():
@@ -957,18 +1166,46 @@ def main():
         action="store_true",
         help="Skip GHCN ingestion and just (re)render the output HTML maps from spool/comfy/year.csv.",
     )
-    parser.set_defaults(overwrite=False, regenerate_maps=False)
+    parser.add_argument(
+        "--full-pipeline",
+        dest="full_pipeline",
+        action="store_true",
+        help="Run the complete ingest + summarize + render pipeline from raw input/queue/*.csv.",
+    )
+    parser.add_argument(
+        "--from-summary",
+        dest="from_summary",
+        action="store_true",
+        help="Skip stages 1+2; assume spool/year/ is populated and run only spool_year_summary_csv + regenerate_all_maps.",
+    )
+    parser.add_argument(
+        "--jobs",
+        dest="jobs",
+        type=int,
+        default=max(1, (os.cpu_count() or 2) - 1),
+        help="Number of worker processes for the per-station and per-map stages. Default: cpu_count - 1.",
+    )
+    parser.set_defaults(
+        overwrite=False, regenerate_maps=False, full_pipeline=False, from_summary=False
+    )
     args = parser.parse_args()
 
     read_env()
     setup_logger()
     setup_spool()
 
+    global _PIPELINE_START_TIME
+    _PIPELINE_START_TIME = time.monotonic()
+    LOG.info(f"Pipeline starting with jobs={args.jobs} (cpu_count={os.cpu_count()})")
+
     if args.regenerate_maps:
-        regenerate_all_maps()
+        regenerate_all_maps(jobs=args.jobs)
         return
 
-    time.sleep(300)
+    if args.from_summary:
+        spool_year_summary_csv(overwrite=args.overwrite)
+        regenerate_all_maps(jobs=args.jobs)
+        return
 
     spool = get_spool()
     check_all_files(
@@ -976,8 +1213,18 @@ def main():
         overwrite=args.overwrite,
         write_meta=True,
         spool=spool,
+        jobs=args.jobs,
     )
-    spool_tmax_tmin(hash_start=args.hash_start, overwrite=args.overwrite, spool=spool)
+    spool_tmax_tmin(
+        hash_start=args.hash_start,
+        overwrite=args.overwrite,
+        spool=spool,
+        jobs=args.jobs,
+    )
+
+    if args.full_pipeline:
+        spool_year_summary_csv(overwrite=args.overwrite)
+        regenerate_all_maps(jobs=args.jobs)
 
 
 if __name__ == "__main__":
