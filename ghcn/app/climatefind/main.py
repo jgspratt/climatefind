@@ -403,6 +403,7 @@ def setup_spool():
         f"{GHCN_DIR}/spool/tmax",
         f"{GHCN_DIR}/spool/year",
         f"{GHCN_DIR}/spool/comfy",
+        f"{GHCN_DIR}/spool/rejected",
     ]
     for dir in dirs:
         if not os.path.isdir(dir):
@@ -423,6 +424,7 @@ def get_spool(empty=False):
         "tmin",
         "year",
         "comfy",
+        "rejected",
     ]
 
     if empty:
@@ -449,14 +451,18 @@ def _worker_init():
 def _check_one_worker(filepath_str):
     """Stage-1 worker: read one input CSV; write spool/meta/<filename> if it qualifies.
 
+    Non-qualifying files get an empty marker in spool/rejected/<filename> so
+    future runs can skip them without re-reading the CSV.
+
     Returns 1 if the station qualified (US + complete year), else 0.
     """
     filepath = filepath_str[len(GHCN_DIR) :]
     filename = os.path.basename(filepath_str)
     meta = read_usa_ghcn_file_meta(filepath)
-    if not meta:
-        return 0
-    if not meta.get("has_complete_temp_year"):
+    if not meta or not meta.get("has_complete_temp_year"):
+        # Touch a marker so the next run's filter skips this file.
+        with open(f"{GHCN_DIR}/spool/rejected/{filename}", "w"):
+            pass
         return 0
     with open(f"{GHCN_DIR}/spool/meta/{filename}", "w") as f:
         f.write(json.dumps(meta, indent=2))
@@ -508,13 +514,16 @@ def check_all_files(
         if not spool:
             spool = get_spool()
 
-    # Split the queue: files that need processing vs. already-cached.
+    # Split the queue: files that need processing vs. already-cached. A file
+    # is cached if it's in spool["meta"] (previously qualified) or in
+    # spool["rejected"] (previously rejected, marker file only).
+    cached = spool["meta"] | spool.get("rejected", set())
     to_process = []
     for file in queue:
         filename = os.path.basename(file)
         if (
             fnmatch.fnmatch(climatefind.utils.get_filename_hash(filename), hash_start)
-            and filename not in spool["meta"]
+            and filename not in cached
         ):
             to_process.append(str(file))
     already_done = len(queue) - len(to_process)
@@ -959,10 +968,11 @@ def get_elevation_df_from_summary_csv(elevation_column="elev_m", no_negatives=Tr
     # contour/marker math doesn't choke on NaN.
     df = df.dropna(subset=["elev"])
     if no_negatives:
-        df[df["elev"] < 0] = 0
-        return df
-    else:
-        return df
+        # Clamp negative elevations to 0 in the elev column only. The bare
+        # `df[mask] = 0` form assigns 0 to every column of matching rows,
+        # which pandas 2.x rejects for string columns like `name`/`id`.
+        df.loc[df["elev"] < 0, "elev"] = 0
+    return df
 
 
 def make_folium_elevation_map(
@@ -1152,13 +1162,21 @@ def main():
         help="Run the complete ingest + summarize + render pipeline from raw input/queue/*.csv.",
     )
     parser.add_argument(
+        "--from-summary",
+        dest="from_summary",
+        action="store_true",
+        help="Skip stages 1+2; assume spool/year/ is populated and run only spool_year_summary_csv + regenerate_all_maps.",
+    )
+    parser.add_argument(
         "--jobs",
         dest="jobs",
         type=int,
         default=max(1, (os.cpu_count() or 2) - 1),
         help="Number of worker processes for the per-station and per-map stages. Default: cpu_count - 1.",
     )
-    parser.set_defaults(overwrite=False, regenerate_maps=False, full_pipeline=False)
+    parser.set_defaults(
+        overwrite=False, regenerate_maps=False, full_pipeline=False, from_summary=False
+    )
     args = parser.parse_args()
 
     read_env()
@@ -1170,6 +1188,11 @@ def main():
     LOG.info(f"Pipeline starting with jobs={args.jobs} (cpu_count={os.cpu_count()})")
 
     if args.regenerate_maps:
+        regenerate_all_maps(jobs=args.jobs)
+        return
+
+    if args.from_summary:
+        spool_year_summary_csv(overwrite=args.overwrite)
         regenerate_all_maps(jobs=args.jobs)
         return
 
