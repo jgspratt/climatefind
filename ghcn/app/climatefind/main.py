@@ -454,11 +454,13 @@ def _check_one_worker(filepath_str):
     Non-qualifying files get an empty marker in spool/rejected/<filename> so
     future runs can skip them without re-reading the CSV.
 
-    Returns 1 if the station qualified (US + complete year), else 0.
+    Returns 1 if the station qualified (any country with a complete temp
+    year), else 0. The rejection criterion is the complete-temp-year check
+    only — country filtering happens at render time per REGIONS.
     """
     filepath = filepath_str[len(GHCN_DIR) :]
     filename = os.path.basename(filepath_str)
-    meta = read_usa_ghcn_file_meta(filepath)
+    meta = read_ghcn_file_meta(filepath)
     if not meta or not meta.get("has_complete_temp_year"):
         # Touch a marker so the next run's filter skips this file.
         with open(f"{GHCN_DIR}/spool/rejected/{filename}", "w"):
@@ -471,7 +473,7 @@ def _check_one_worker(filepath_str):
 
 def _spool_tmax_tmin_one_worker(filename):
     """Stage-2 worker: build tmax/tmin/year JSON for one qualifying station."""
-    meta = read_usa_ghcn_file_meta(f"input/queue/{filename}")
+    meta = read_ghcn_file_meta(f"input/queue/{filename}")
     csv = csv_from_temp_ghcn_file(f"input/queue/{filename}")
     year = num_comfy_days_per_year_from_csv(csv)
     year["meta"] = meta
@@ -495,14 +497,15 @@ def _spool_tmax_tmin_one_worker(filename):
 def _render_one_map_worker(args):
     """Stage-4 worker: render one folium map.
 
-    args = (column, output_name, color_scheme, units).
+    args = (region, column, output_name, color_scheme, units).
     """
-    column, output_name, color_scheme, units = args
+    region, column, output_name, color_scheme, units = args
     return make_folium_elevation_map(
         elevation_column=column,
         output_name=output_name,
         color_scheme=color_scheme,
         units=units,
+        region=region,
     )
 
 
@@ -583,6 +586,7 @@ def spool_year_summary_csv(overwrite=False, spool=None):
             year = json.load(f)
             comfy[file_num] = {
                 "id": year["meta"]["id"],
+                "country": year["meta"].get("country", ""),
                 "state": year["meta"]["state"],
                 "start_date": year["meta"]["start_date"],
                 "end_date": year["meta"]["end_date"],
@@ -618,7 +622,7 @@ def spool_year_summary_csv(overwrite=False, spool=None):
 
     progress.done_now()
     comfy_df = pandas.DataFrame.from_dict(comfy, orient="index")
-    comfy_df.sort_values(["state", "average_comfy_days"], inplace=True)
+    comfy_df.sort_values(["country", "state", "average_comfy_days"], inplace=True)
     comfy_df.to_csv(f"{GHCN_DIR}/spool/comfy/year.csv")
     return True
 
@@ -760,7 +764,7 @@ def is_comfy_day(tmax, tmin):
     )
 
 
-def read_usa_ghcn_file_meta(filepath):
+def read_ghcn_file_meta(filepath):
     """
     :return: The following
     {
@@ -788,9 +792,6 @@ def read_usa_ghcn_file_meta(filepath):
         ],
     )
     meta = {}
-    if not get_state_from_csv(csv):  # Non-US loation
-        return meta
-
     attributes_map = {
         "STATION": "id",
         "NAME": "name",
@@ -802,6 +803,10 @@ def read_usa_ghcn_file_meta(filepath):
     for csv_key, meta_key in attributes_map.items():
         meta[meta_key] = first_data_row[csv_key]
 
+    # GHCN station IDs are an 11-character FIPS-prefixed code; the first two
+    # characters identify the country (e.g. "US", "CA", "FR"). See
+    # ghcn/doc/readme.txt.
+    meta["country"] = str(meta["id"])[:2]
     meta["state"] = get_state_from_csv(csv)
     meta["start_date"] = get_start_date_from_csv(csv)
     meta["end_date"] = get_end_date_from_csv(csv)
@@ -825,6 +830,10 @@ def get_end_date_from_csv(csv):
 
 
 def get_state_from_csv(csv):
+    """Return the US state postal code for US stations, empty string otherwise.
+
+    Non-US stations are not ignored — they just have no state.
+    """
     station_name = csv.iloc[0]["NAME"]
     try:
         country = station_name[-2:]
@@ -833,7 +842,8 @@ def get_state_from_csv(csv):
             if US_STATES.get(state):
                 return state
     except IndexError:
-        return ""
+        pass
+    return ""
 
 
 def normalize_temperature(temperature_tenths_c):
@@ -939,10 +949,6 @@ def is_temperature_file(filepath):
         return False
 
 
-def is_usa_location_from_csv(csv):
-    return bool(get_state_from_csv())
-
-
 def scale_onto_array(vmin, vmax, val, arr):
     arr_len = len(arr)
     this_range = vmax - vmin
@@ -961,11 +967,15 @@ def get_elevation_df_from_summary_csv(elevation_column="elev_m", no_negatives=Tr
         elevation_column,
         "name",
         "id",
+        "country",
+        "state",
     ]
     if elevation_column != "elev_m":
         usecols += ["elev_m"]
 
     df = pandas.read_csv(f"{GHCN_DIR}/spool/comfy/year.csv", usecols=usecols)
+    df["country"] = df["country"].fillna("").astype(str)
+    df["state"] = df["state"].fillna("").astype(str)
     df.rename(columns={elevation_column: "elev"}, inplace=True)
     # Some stations are only present in a subset of metric files (the
     # reconstructed year.csv left those cells as NaN); drop them so the
@@ -980,9 +990,20 @@ def get_elevation_df_from_summary_csv(elevation_column="elev_m", no_negatives=Tr
 
 
 def make_folium_elevation_map(
-    elevation_column="elev_m", output_name=None, color_scheme="high_green", units="m"
+    elevation_column="elev_m",
+    output_name=None,
+    color_scheme="high_green",
+    units="m",
+    region="conus",
 ):
+    region_cfg = REGIONS[region]
     df = get_elevation_df_from_summary_csv(elevation_column)
+    df = df[df.apply(region_cfg["filter"], axis=1)]
+    if df.empty:
+        LOG.warning(
+            f"make_folium_elevation_map: no stations match region={region!r}, skipping"
+        )
+        return None
     colors = MAP_COLORS[color_scheme]
     num_colors = len(colors)
 
@@ -1035,9 +1056,10 @@ def make_folium_elevation_map(
     )
 
     # Set up the map placeholdder
+    center_lat, center_lon = region_cfg["center"]
     geomap1 = folium.Map(
-        location=[42.0573, -102.8017],
-        zoom_start=6,
+        location=[center_lat, center_lon],
+        zoom_start=region_cfg["zoom"],
         tiles=ENV["map"]["url"],
         attr=ENV["map"]["attr"],
         max_zoom=ENV["map"].get("max_zoom", 18),
@@ -1093,7 +1115,7 @@ def make_folium_elevation_map(
 
     tile_name = ENV["map"]["name"].replace(" ", "_")
     name = output_name or elevation_column
-    test_html_filepath = f"""{GHCN_DIR}/output/{name}.{tile_name}.html"""
+    test_html_filepath = f"""{GHCN_DIR}/output/{region}/{name}.{tile_name}.html"""
     os.makedirs(os.path.dirname(test_html_filepath), exist_ok=True)
     geomap1.save(test_html_filepath)
     matplotlib.pyplot.close("all")
@@ -1103,11 +1125,35 @@ def make_folium_elevation_map(
     return test_html_filepath
 
 
+# Regions are the unit of "one set of maps". Each region is rendered as its
+# own subdir under ghcn/output/<region>/ and img/<region>/. Adding a region
+# is a one-entry config change: `filter` is a row predicate over year.csv
+# (gets a pandas row, returns bool); `center`/`zoom` frame the folium map;
+# `viewport` is consumed by render_pngs.py for the matching PNG.
+#
+# `state` empty means the station isn't US; non-US data ingests fine but
+# only renders for regions whose filter accepts it.
+REGIONS = {
+    "conus": {
+        "filter": lambda r: r["country"] == "US",
+        "center": (38.4, -96.05),
+        "zoom": 6,
+        "viewport": (2640, 1430),
+    },
+    "world": {
+        "filter": lambda r: True,
+        "center": (20.0, 0.0),
+        "zoom": 3,
+        "viewport": (2640, 1430),
+    },
+}
+
+
 # (column, output_name, color_scheme, units) for each map regenerated from
 # year.csv. `column` is read from the CSV; `output_name` is the path
-# (relative to ghcn/output/, without the .{tile_name}.html suffix) where
-# the HTML lands. Months live in their own subdir so the output/ root stays
-# tidy.
+# (relative to ghcn/output/<region>/, without the .{tile_name}.html suffix)
+# where the HTML lands. Months live in their own subdir so the region root
+# stays tidy.
 ALL_MAPS = [
     ("average_comfy_days", "average_comfy_days", "high_green", "days/year"),
     ("aug_1_tmax", "aug_1_tmax", "high_red", "C"),
@@ -1128,28 +1174,40 @@ ALL_MAPS = [
 
 
 def regenerate_all_maps(jobs=1):
-    """Regenerate every output HTML map from spool/comfy/year.csv."""
-    progress = _Progress("regenerate_all_maps", len(ALL_MAPS), 4, 4)
-    # Cap at len(ALL_MAPS) — extra workers buy nothing.
-    pool_jobs = min(jobs, len(ALL_MAPS))
+    """Regenerate every output HTML map from spool/comfy/year.csv.
+
+    Walks REGIONS x ALL_MAPS; each (region, metric) pair becomes one HTML
+    under ghcn/output/<region>/.
+    """
+    work = [
+        (region, column, output_name, color_scheme, units)
+        for region in REGIONS
+        for (column, output_name, color_scheme, units) in ALL_MAPS
+    ]
+    progress = _Progress("regenerate_all_maps", len(work), 4, 4)
+    # Cap at len(work) — extra workers buy nothing.
+    pool_jobs = min(jobs, len(work))
     if pool_jobs > 1:
         LOG.info(
-            f"regenerate_all_maps: rendering {len(ALL_MAPS)} maps across {pool_jobs} workers"
+            f"regenerate_all_maps: rendering {len(work)} maps "
+            f"({len(REGIONS)} regions x {len(ALL_MAPS)} metrics) "
+            f"across {pool_jobs} workers"
         )
         with concurrent.futures.ProcessPoolExecutor(
             max_workers=pool_jobs, initializer=_worker_init
         ) as ex:
-            for out in ex.map(_render_one_map_worker, ALL_MAPS):
+            for out in ex.map(_render_one_map_worker, work):
                 LOG.info(f"  wrote {out}")
                 progress.tick(force=True)
     else:
-        for column, output_name, color_scheme, units in ALL_MAPS:
-            LOG.info(f"rendering {output_name} ({color_scheme}, {units})")
+        for region, column, output_name, color_scheme, units in work:
+            LOG.info(f"rendering {region}/{output_name} ({color_scheme}, {units})")
             out = make_folium_elevation_map(
                 elevation_column=column,
                 output_name=output_name,
                 color_scheme=color_scheme,
                 units=units,
+                region=region,
             )
             LOG.info(f"  wrote {out}")
             progress.tick(force=True)

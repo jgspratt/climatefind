@@ -13,6 +13,11 @@
 #
 # Any other args forward straight to `python3 -m climatefind.main`.
 #
+# NOTE: schema-changing pipeline updates (e.g. adding a `country` column,
+# or changing the stage-1 rejection criteria) require a one-time
+# `--overwrite` so spool/rejected/ is wiped and every CSV is re-checked
+# under the new rules. After that, idempotent resume is fine again.
+#
 # Usage:
 #   ./run_pipeline.sh                       # resume / finish a partial run
 #   ./run_pipeline.sh --overwrite           # wipe everything, start over

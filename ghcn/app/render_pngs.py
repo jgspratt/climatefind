@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Render CONUS-zoomed PNGs from the folium HTML maps in ghcn/output/.
+"""Render per-region PNGs from the folium HTML maps in ghcn/output/<region>/.
 
 Drives a headless Chromium via Playwright: load each HTML, center the
-Leaflet map on the continental US, wait for tiles + markers, screenshot.
+Leaflet map for the region, wait for tiles + markers, screenshot.
 
 Install once::
 
@@ -11,8 +11,10 @@ Install once::
 
 Usage::
 
-  python3 render_pngs.py             # render all 13 maps to img/
-  python3 render_pngs.py --no-headless   # show the browser (debugging)
+  python3 render_pngs.py                  # render all regions x metrics
+  python3 render_pngs.py --only world     # only the world region
+  python3 render_pngs.py --only months_01 # only Jan maps (both regions)
+  python3 render_pngs.py --no-headless    # show the browser (debugging)
 """
 
 import argparse
@@ -27,39 +29,55 @@ REPO_ROOT = THIS_DIR.parent.parent
 GHCN_OUTPUT = REPO_ROOT / "ghcn" / "output"
 IMG_DIR = REPO_ROOT / "img"
 
-# (path under ghcn/output/, path under img/)
-RENDERS = [
-    ("average_comfy_days.OpenTopoMap.html", "ghcn_average_comfy_days.png"),
-    ("months/01_jan_percent_comfy.OpenTopoMap.html", "months/01_jan_percent_comfy.png"),
-    ("months/02_feb_percent_comfy.OpenTopoMap.html", "months/02_feb_percent_comfy.png"),
-    ("months/03_mar_percent_comfy.OpenTopoMap.html", "months/03_mar_percent_comfy.png"),
-    ("months/04_apr_percent_comfy.OpenTopoMap.html", "months/04_apr_percent_comfy.png"),
-    ("months/05_may_percent_comfy.OpenTopoMap.html", "months/05_may_percent_comfy.png"),
-    ("months/06_jun_percent_comfy.OpenTopoMap.html", "months/06_jun_percent_comfy.png"),
-    ("months/07_jul_percent_comfy.OpenTopoMap.html", "months/07_jul_percent_comfy.png"),
-    ("months/08_aug_percent_comfy.OpenTopoMap.html", "months/08_aug_percent_comfy.png"),
-    ("months/09_sep_percent_comfy.OpenTopoMap.html", "months/09_sep_percent_comfy.png"),
-    ("months/10_oct_percent_comfy.OpenTopoMap.html", "months/10_oct_percent_comfy.png"),
-    ("months/11_nov_percent_comfy.OpenTopoMap.html", "months/11_nov_percent_comfy.png"),
-    ("months/12_dec_percent_comfy.OpenTopoMap.html", "months/12_dec_percent_comfy.png"),
+# Mirror of REGIONS in climatefind/main.py — render-side only needs the
+# viewport + center + zoom. Keep these in sync when adding a region.
+REGIONS = {
+    "conus": {"center": (38.4, -96.05), "zoom": 6, "viewport": (2640, 1430)},
+    "world": {"center": (20.0, 0.0), "zoom": 3, "viewport": (2640, 1430)},
+}
+
+# Metric paths under ghcn/output/<region>/ and img/<region>/, without the
+# `.OpenTopoMap.html` / `.png` suffix. Months live in their own subdir.
+METRICS = [
+    "average_comfy_days",
+    "aug_1_tmax",
+    "aug_1_tmin",
+    "months/01_jan_percent_comfy",
+    "months/02_feb_percent_comfy",
+    "months/03_mar_percent_comfy",
+    "months/04_apr_percent_comfy",
+    "months/05_may_percent_comfy",
+    "months/06_jun_percent_comfy",
+    "months/07_jul_percent_comfy",
+    "months/08_aug_percent_comfy",
+    "months/09_sep_percent_comfy",
+    "months/10_oct_percent_comfy",
+    "months/11_nov_percent_comfy",
+    "months/12_dec_percent_comfy",
 ]
 
-# Viewport ratio matches the existing PNGs (~1.83:1) at 2x density for sharp
-# README rendering. CONUS center/zoom chosen to fit the lower 48.
-VIEWPORT_W = 2640
-VIEWPORT_H = 1430
-CONUS_CENTER_LAT = 38.4
-CONUS_CENTER_LON = -96.05
-CONUS_ZOOM = 6
 
-# Folium auto-generates a global `map_<hash>` for each map. Find it and set
-# the view, then wait for tile + contour layers to settle.
-SET_VIEW_JS = f"""
+def build_renders():
+    """(region, html_path_under_output, png_path_under_img) for every render."""
+    return [
+        (
+            region,
+            f"{region}/{metric}.OpenTopoMap.html",
+            f"{region}/{metric}.png",
+        )
+        for region in REGIONS
+        for metric in METRICS
+    ]
+
+
+def build_set_view_js(center_lat, center_lon, zoom):
+    """Build the JS that targets the folium-generated map var and reframes it."""
+    return f"""
 () => {{
   const mapKey = Object.keys(window).find(k => k.startsWith('map_'));
   if (!mapKey) {{ throw new Error('no map_<hash> global found'); }}
   const m = window[mapKey];
-  m.setView([{CONUS_CENTER_LAT}, {CONUS_CENTER_LON}], {CONUS_ZOOM});
+  m.setView([{center_lat}, {center_lon}], {zoom});
   // Hide the zoom controls + attribution so they don't sit in the corner of
   // the README hero shot.
   document.querySelectorAll(
@@ -69,9 +87,9 @@ SET_VIEW_JS = f"""
 }}
 """
 
+
 # Wait for at least most of the visible tiles to load. Leaflet sets a class
-# `leaflet-tile-loaded` on each tile <img> once it's done. We poll for a
-# stable count.
+# `leaflet-tile-loaded` on each tile <img> once it's done.
 TILES_READY_JS = """
 () => {
   const tiles = document.querySelectorAll('.leaflet-tile');
@@ -81,14 +99,14 @@ TILES_READY_JS = """
 """
 
 
-def render_one(page, html_path, png_path, settle_seconds):
+def render_one(page, html_path, png_path, set_view_js, settle_seconds):
     print(f"  loading {html_path.name}")
     page.goto(html_path.as_uri(), wait_until="domcontentloaded")
     # Folium injects the map var via a deferred script; give it a beat.
     page.wait_for_function(
         "Object.keys(window).some(k => k.startsWith('map_'))", timeout=15000
     )
-    map_key = page.evaluate(SET_VIEW_JS)
+    map_key = page.evaluate(set_view_js)
     print(f"    set view via {map_key}; waiting for tiles")
     try:
         page.wait_for_function(TILES_READY_JS, timeout=60000)
@@ -105,12 +123,17 @@ def render_one(page, html_path, png_path, settle_seconds):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--no-headless", action="store_true", help="Show the browser for debugging."
+        "--no-headless",
+        action="store_true",
+        help="Show the browser for debugging.",
     )
     parser.add_argument(
         "--only",
         default=None,
-        help="Render only the HTMLs whose basename contains this substring (e.g. 'months_01').",
+        help=(
+            "Substring filter: matches against region+metric path "
+            "(e.g. 'world', 'conus/months_01', 'jun_percent')."
+        ),
     )
     parser.add_argument(
         "--settle-seconds",
@@ -120,32 +143,43 @@ def main():
     )
     args = parser.parse_args()
 
-    renders = RENDERS
+    renders = build_renders()
     if args.only:
-        renders = [r for r in RENDERS if args.only in r[0]]
+        renders = [r for r in renders if args.only in r[1]]
         if not renders:
             print(f"no matches for --only={args.only!r}", file=sys.stderr)
             return 1
 
-    missing = [h for (h, _) in renders if not (GHCN_OUTPUT / h).exists()]
+    missing = [h for (_, h, _) in renders if not (GHCN_OUTPUT / h).exists()]
     if missing:
         print("missing source HTMLs:", missing, file=sys.stderr)
         return 1
 
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=not args.no_headless)
-        context = browser.new_context(
-            viewport={"width": VIEWPORT_W, "height": VIEWPORT_H},
-            device_scale_factor=1,
-        )
-        page = context.new_page()
-        for html_name, png_name in renders:
-            render_one(
-                page,
-                GHCN_OUTPUT / html_name,
-                IMG_DIR / png_name,
-                settle_seconds=args.settle_seconds,
+        # One context per region — viewport may differ region-to-region.
+        for region, cfg in REGIONS.items():
+            region_renders = [r for r in renders if r[0] == region]
+            if not region_renders:
+                continue
+            w, h = cfg["viewport"]
+            center_lat, center_lon = cfg["center"]
+            set_view_js = build_set_view_js(center_lat, center_lon, cfg["zoom"])
+            context = browser.new_context(
+                viewport={"width": w, "height": h},
+                device_scale_factor=1,
             )
+            page = context.new_page()
+            print(f"region {region} (viewport={w}x{h}, zoom={cfg['zoom']})")
+            for _, html_name, png_name in region_renders:
+                render_one(
+                    page,
+                    GHCN_OUTPUT / html_name,
+                    IMG_DIR / png_name,
+                    set_view_js,
+                    settle_seconds=args.settle_seconds,
+                )
+            context.close()
         browser.close()
     return 0
 
