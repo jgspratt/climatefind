@@ -50,7 +50,7 @@ VIEWPORT_W = 2400
 VIEWPORT_H = 1300
 CONUS_CENTER_LAT = 39.5
 CONUS_CENTER_LON = -97.5
-CONUS_ZOOM = 5
+CONUS_ZOOM = 6
 
 # Folium auto-generates a global `map_<hash>` for each map. Find it and set
 # the view, then wait for tile + contour layers to settle.
